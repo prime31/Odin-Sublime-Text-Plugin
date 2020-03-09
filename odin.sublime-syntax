@@ -1,0 +1,200 @@
+%YAML 1.2
+---
+
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Odin
+file_extensions:
+  - odin
+
+scope: source.odin
+
+contexts:
+  main:
+    - include: common
+    - match: '{'
+      push: block
+  
+  block:
+    - include: common
+    - meta_scope: meta.block.odin
+    - match: '{'
+      push: block
+    - match: '}'
+      pop: true
+
+  common:
+    - include: comment
+
+    # Herestring literals.
+    # NOTE: Must have priority over general preprocessor rule.
+    - match: (#)(string) (.*)$
+      captures:
+        1: punctuation.preprocessor.odin, meta.preprocessor.odin
+        2: meta.preprocessor.odin
+        3: constant.other.stringdelimiter.odin
+      scope:
+      embed: herestring-content
+      escape: ^(\3)$
+      escape_captures:
+        1: constant.other.stringdelimiter.odin
+    - match: '(#)(\w+?)\b'
+      captures:
+        1: punctuation.preprocessor.odin, meta.preprocessor.odin
+        2: meta.preprocessor.odin
+
+    # Function definition with line ending before )
+    - match: '\b\w+(?=\s*:\s*[:=]\s*proc\(\s*\w+:)'
+      scope: entity.name.function.odin
+      push: function-def
+    # Function definition with line ending immediately after (
+    - match: '\b\w+(?=\s*:\s*[:=]\s*proc\(\s*$)'
+      scope: entity.name.function.odin
+      push: function-def
+    # Full, one-line function definition
+    - match: '\b\w+(?=\s*:\s*[:=]\s*proc\([^)]*?\)\s*(?:{|->))'
+      scope: entity.name.function.odin
+      push: function-def
+    - match: '\b\w+(?=\s*:\s*[:=]\s*struct)'
+      scope: entity.name.struct.odin
+      push: struct-def
+    - match: '\b\w+(?=\s*:\s*[:=]\s*enum)'
+      scope: entity.name.enum.odin
+      push: enum-def
+    - match: '\b\w+(?=\s*:.*?(?:[:=].*?)?;)'
+      scope: entity.name.variable.odin
+      push: variable-def
+    - match: '\b(?:return|if|then|else|for|break|continue|it|it_index|struct|using)\b'
+      scope: keyword.odin
+    - include: storage-type
+    - include: expression
+    - match: ';'
+      scope: punctuation.terminator.odin
+  
+  herestring-content:
+    - meta_scope: string.unquoted.odin
+
+  string-literal:
+    - meta_scope: string.quoted.double.odin
+    - match: '\\.'
+      scope: constant.character.escape.odin
+    - match: '%'
+      scope: constant.other.placeholder.odin
+    - match: '"'
+      pop: true
+    
+  multiline-comment:
+    - match: /\*
+      push:
+        - include: multiline-comment
+        - meta_scope: comment.block.odin
+        - match: \*/
+          pop: true
+  
+  comment:
+    - include: multiline-comment
+    - match: //
+      push:
+        - meta_scope: comment.line.odin
+        - match: $
+          pop: true
+  
+  expression:
+    - include: comment
+    - match: '"'
+      push: string-literal
+    - match: '\b\w+(?=\()'
+      scope: variable.function.odin
+    - match: '\b0h[a-fA-F0-9]+'
+      scope: constant.numeric.float.hexadecimal.odin
+    - match: '\b0x[a-fA-F0-9]+'
+      scope: constant.numeric.integer.hexadecimal.odin
+    - match: '\b\d+\.\d*'
+      scope: constant.numeric.float.decimal.odin
+    - match: '\b\d+'
+      scope: constant.numeric.integer.decimal.odin
+    - match: '\b(?:null|true|false)\b'
+      scope: constant.language.odin
+    - match: '(?<=\w)\.(?=[a-zA-Z_])'
+      scope: punctuation.accessor.odin
+    - match: '\['
+      scope: punctuation.section.brackets.begin.odin
+    - match: '\]'
+      scope: punctuation.section.brackets.end.odin
+    - match: '>>|<<|[&|]'
+      scope: keyword.operator.bitwise.odin
+    - match: '[><!]|=='
+      scope: keyword.operator.logical.odin
+    - match: '[+*/-]'
+      scope: keyword.operator.arithmetic.odin
+    - match: '\s*:[=:]'
+      scope: keyword.operator.assignment.odin
+    - match: '(?<=\w)\s*:(?=.*?[:=])'
+      scope: keyword.operator.assignment.odin
+    - match: ':(?=.+?;)'
+      scope: keyword.operator.assignment.odin
+    - match: '='
+      scope: keyword.operator.assignment.odin
+  
+  storage-type:
+    - match: '\b(?:Any|void|string|bool|float|float32|float64|int|u8|u16|u32|u64|s8|s16|s32|s64)\b'
+      scope: storage.type.odin
+  
+  params:
+    - meta_content_scope: meta.function.parameters.odin
+    - include: comment
+    - include: storage-type
+    - match: '\b\w+(?=\s*:)'
+      scope: variable.parameter.odin
+    - match: ':'
+      scope: keyword.other.odin
+    - match: ','
+      scope: punctuation.separator.odin
+    - match: '\)'
+      pop: true
+    
+  function-def:
+    - meta_scope: meta.function.odin
+    - include: comment
+    - match: '::|:='
+      scope: keyword.operator.assignment.odin
+    - match: '\('
+      push: params
+    - include: storage-type
+    - match: '(?=\s*{)'
+      pop: true
+
+  struct-def:
+    - meta_scope: meta.struct.odin
+    - include: comment
+    - match: '::|:='
+      scope: keyword.operator.assignment.odin
+    - match: '\bstruct\b'
+      scope: keyword.odin
+    - match: '(?=\s*{)'
+      pop: true
+  
+  enum-def:
+    - meta_scope: meta.enum.odin
+    - include: comment
+    - match: '::|:='
+      scope: keyword.operator.assignment.odin
+    - match: '\benum\b'
+      scope: keyword.odin
+    - match: '(?=\s*{)'
+      pop: true
+  
+  variable-def:
+    - meta_scope: meta.variable.odin
+    - include: comment
+    - include: storage-type
+    - include: expression
+    - match: ':|='
+      scope: keyword.operator.assignment.odin
+    - match: ';'
+      scope: punctuation.terminator.odin
+      pop: true
+
+
+
+
+

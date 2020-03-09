@@ -1,0 +1,8 @@
+{
+	"selector": "source.odin",
+	"file_patterns": ["*.odin"],
+	"shell_cmd": "odin run $file",
+	"working_dir": "$file_path",
+	"quiet": true,
+	"file_regex": "^(.*?)\\((\\d+):(\\d+)\\)\\s(.*?)$"
+}
