@@ -16,7 +16,7 @@ class OdinCompletions(sublime_plugin.EventListener):
   definition_pattern = re.compile(r'\b\w+\s*:[\w\W]*?[{;]')
   struct_pattern = re.compile(r'(\b\w+)\s*::\s*struct\s*[\w\W]*?[{;]')
   line_comment_pattern = re.compile(r'//.*?(?=\n)')
-  proc_pattern = re.compile(r'\b(\w+)\s*:\s*[:=]\s*proc\(([\w\W]*?)\)\s*(?:->\s*(.*?)\s*)?')
+  proc_pattern = re.compile(r'\b(\w+)\s*:\s*[:=]\s*proc\(([\w\W]*?)\)\s*(?:->\s*(.*?)\s)?')
   proc_differentiator_pattern = re.compile(r'proc\(.*?\)')
   proc_params_pattern = re.compile(r'(?:^|)\s*([^,]+?)\s*(?:$|,)')
 
@@ -81,6 +81,7 @@ class OdinCompletions(sublime_plugin.EventListener):
               paths.add(os.path.join(root, file))
 
     if is_core_module_completion and not is_var_field_access:
+
       # include any imported core modules
       if len(self.included_core_modules) > 0:
         odin_lib_path = os.path.expanduser('~/odin/core')
@@ -105,7 +106,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     file_view = sublime.active_window().find_open_file(file_path)
 
     if file_view == None:
-      with open(file_path, 'r') as f:
+      with open(file_path, 'r', encoding='utf-8') as f:
         return f.read()
     else:
       entire_buffer = file_view.find('[\w\W]*', 0)
@@ -253,6 +254,10 @@ class OdinCompletions(sublime_plugin.EventListener):
     self.included_core_modules = self.core_module_pattern.findall(contents)
     self.included_local_modules = self.local_module_pattern.findall(contents)
     self.included_shared_modules = self.shared_module_pattern.findall(contents)
+
+    # cleanup nested
+    self.included_core_modules = list(map(lambda x: os.path.basename(os.path.normpath(x)), self.included_core_modules))
+    self.included_shared_modules = list(map(lambda x: os.path.basename(os.path.normpath(x)), self.included_shared_modules))
 
     paths = self.get_all_odin_file_paths()
     completions = []
