@@ -1,6 +1,0 @@
-[
-    {
- 		"caption": "WTF Open With Finder",
- 		"command": "open_in_finder", "args": {"files": []}
- 	},
- ]

@@ -1,0 +1,20 @@
+[
+    {
+ 		"caption": "Reveal in Finder…",
+		"id": "odin-open-in-finder",
+ 		"command": "open_in_finder",
+		"args": {"paths": []}
+ 	},
+	{
+		"caption": "Duplicate…",
+		"id": "odin-duplicate",
+		"command": "duplicate",
+		"args": {"paths": []}
+	},
+	{
+		"caption": "Move…",
+		"id": "odin-menu-move",
+		"command": "move",
+		"args": {"paths": []}
+	},
+ ]
