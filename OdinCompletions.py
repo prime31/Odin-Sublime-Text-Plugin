@@ -7,6 +7,9 @@ import time
 
 
 class OdinCompletions(sublime_plugin.EventListener):
+  # when filtering for user dirs exclude these. Note that 'libs' is included only because 'projects' is in 'shared' temporarily
+  exclude_dirs = set(['.git', 'libs'])
+
   import_pattern = re.compile(r'(import\s.*\n)')
   package_pattern = re.compile(r'package\s(.*)')
   core_module_pattern = re.compile(r'import\s\"(?:core:)+(.*?)\"')
@@ -59,6 +62,7 @@ class OdinCompletions(sublime_plugin.EventListener):
       # Get odin file paths from all open folders
       for folder in window.folders():
         for root, dirs, files in os.walk(folder):
+          dirs[:] = list(filter(lambda x: not x in self.exclude_dirs, dirs))
           for file in fnmatch.filter(files, '*.odin'):
             file_path = os.path.join(root, file)
             paths.add(file_path)
@@ -81,7 +85,6 @@ class OdinCompletions(sublime_plugin.EventListener):
               paths.add(os.path.join(root, file))
 
     if is_core_module_completion and not is_var_field_access:
-
       # include any imported core modules
       if len(self.included_core_modules) > 0:
         odin_lib_path = os.path.expanduser('~/odin/core')
@@ -231,20 +234,41 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     return completions
 
+  # return True if the next char is empty or a newline and all the previous chars are valid proc name chars up to the '.'
+  def is_dot_completion(self, file_view, loc):
+    # next char should be some type of space, ie we are not in a word typing
+    next_char = file_view.substr(sublime.Region(loc, loc + 1))
+    if next_char not in ['\n', '', ' ']:
+      return False
+
+    # walk backwards until we find a '.'. If we hit a non-proc/variable name char bail out since this isnt a completion
+    curr_line_region = file_view.line(loc)
+    while loc > curr_line_region.begin():
+      char = file_view.substr(sublime.Region(loc - 1, loc))
+      if char == '.':
+        return True
+        break;
+
+      if char.isalnum() or char == '_':
+        loc -= 1
+      else:
+        return False
+        break;
+
   def on_query_completions(self, view, prefix, locations):
     start_time = time.time()
 
     if not self.view_is_odin(view):
-      view.window().status_message('not odin')
       return None
 
 
-    # wip: extract the current text if there is a '.' and get the previous word to see if it matches a package
-    file_view = sublime.active_window().find_open_file(sublime.active_window().active_view().file_name())
+    # extract the current text if there is a '.' and get the previous word to see if it matches a package
+    file_view = sublime.active_window().find_open_file(view.file_name())
     curr_line_region = file_view.line(locations[0])
     curr_line = file_view.substr(curr_line_region).strip()
 
-    if '.' in curr_line:
+    # this needs to check if the '.' is not just in the line but connected to the text we are typing
+    if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
       self.before_dot = curr_line.rsplit('.', 1)[0]
     else:
       self.before_dot = None
