@@ -7,14 +7,15 @@ import time
 
 
 class OdinCompletions(sublime_plugin.EventListener):
-  # when filtering for user dirs exclude these. Note that 'libs' is included only because 'projects' is in 'shared' temporarily
+  # when filtering for user dirs exclude these. Note that 'libs' is excluded only because 'projects' is in 'shared' temporarily
   exclude_dirs = set(['.git', 'libs'])
+  alias_to_module = dict()
 
   import_pattern = re.compile(r'(import\s.*\n)')
   package_pattern = re.compile(r'package\s(.*)')
-  core_module_pattern = re.compile(r'import\s\"(?:core:)+(.*?)\"')
-  shared_module_pattern = re.compile(r'import\s\"(?:shared:)+(.*?)\"')
-  local_module_pattern = re.compile(r'import\s\"(?:[a-zA-Z0-9]+\/)+(.*?)\"')
+  core_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:core:)+(.*?)\"')
+  shared_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:shared:)+(.*?)\"')
+  local_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:[a-zA-Z0-9]+\/)+(.*?)\"')
 
   definition_pattern = re.compile(r'\b\w+\s*:[\w\W]*?[{;]')
   struct_pattern = re.compile(r'(\b\w+)\s*::\s*struct\s*[\w\W]*?[{;]')
@@ -52,11 +53,13 @@ class OdinCompletions(sublime_plugin.EventListener):
     paths = set()
     window = sublime.active_window()
 
-    # use these to filter so we dont pile on unecessary files to parse
-    is_core_module_completion = self.before_dot in self.included_core_modules
-    is_shared_module_completion = self.before_dot in self.included_shared_modules
-    is_user_module_completion = self.before_dot in self.included_local_modules
-    is_var_field_access = self.before_dot != None and not is_core_module_completion and not is_user_module_completion and not is_shared_module_completion
+    word_before_dot = self.alias_to_module[self.before_dot] if self.before_dot in self.alias_to_module else self.before_dot
+
+    # use this data to filter so we dont pile on unecessary files to parse
+    is_core_module_completion = word_before_dot in self.included_core_modules
+    is_shared_module_completion = word_before_dot in self.included_shared_modules
+    is_user_module_completion = word_before_dot in self.included_local_modules
+    is_var_field_access = word_before_dot != None and not is_core_module_completion and not is_user_module_completion and not is_shared_module_completion
 
     if not is_core_module_completion and not is_shared_module_completion and not is_var_field_access:
       # Get odin file paths from all open folders
@@ -100,8 +103,8 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     # if we have some module prefix then filter so we only include files in that module
     if (is_core_module_completion or is_user_module_completion or is_shared_module_completion) and not is_var_field_access:
-      filter_txt = '*[' + self.before_dot + ']/*.odin'
-      paths = {f for f in paths if fnmatch.fnmatch(f, filter_txt)}
+      filter_txt = '*' + word_before_dot + '/*.odin'
+      paths = fnmatch.filter(paths, filter_txt)
 
     return paths
 
@@ -234,14 +237,14 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     return completions
 
-  # return True if the next char is empty or a newline and all the previous chars are valid proc name chars up to the '.'
+  # return True if the next char is empty or a newline and all the previous chars are valid proc/var name chars up to the '.'
   def is_dot_completion(self, file_view, loc):
     # next char should be some type of space, ie we are not in a word typing
     next_char = file_view.substr(sublime.Region(loc, loc + 1))
     if next_char not in ['\n', '', ' ']:
       return False
 
-    # walk backwards until we find a '.'. If we hit a non-proc/variable name char bail out since this isnt a completion
+    # walk backwards until we find a '.'. If we hit a non-proc/var char bail out since this isnt a completion
     curr_line_region = file_view.line(loc)
     while loc > curr_line_region.begin():
       char = file_view.substr(sublime.Region(loc - 1, loc))
@@ -254,6 +257,31 @@ class OdinCompletions(sublime_plugin.EventListener):
       else:
         return False
         break;
+
+  def extract_includes(self):
+    contents = self.get_file_contents(sublime.active_window().active_view().file_name())
+    self.current_module = self.package_pattern.findall(contents)[0]
+    core_modules = self.core_module_pattern.findall(contents)
+    shared_modules = self.shared_module_pattern.findall(contents)
+    local_modules = self.local_module_pattern.findall(contents)
+
+    for mod in core_modules:
+      module = os.path.basename(os.path.normpath(mod[1]))
+      alias = mod[0] or module
+      self.alias_to_module[alias] = module
+      self.included_core_modules.append(module)
+
+    for mod in shared_modules:
+      module = os.path.basename(os.path.normpath(mod[1]))
+      alias = mod[0] or module
+      self.alias_to_module[alias] = module
+      self.included_shared_modules.append(module)
+
+    for mod in local_modules:
+      module = os.path.basename(os.path.normpath(mod[1]))
+      alias = mod[0] or module
+      self.alias_to_module[alias] = module
+      self.included_local_modules.append(module)
 
   def on_query_completions(self, view, prefix, locations):
     start_time = time.time()
@@ -273,15 +301,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     else:
       self.before_dot = None
 
-    contents = self.get_file_contents(sublime.active_window().active_view().file_name())
-    self.current_module = self.package_pattern.findall(contents)[0]
-    self.included_core_modules = self.core_module_pattern.findall(contents)
-    self.included_local_modules = self.local_module_pattern.findall(contents)
-    self.included_shared_modules = self.shared_module_pattern.findall(contents)
-
-    # cleanup nested
-    self.included_core_modules = list(map(lambda x: os.path.basename(os.path.normpath(x)), self.included_core_modules))
-    self.included_shared_modules = list(map(lambda x: os.path.basename(os.path.normpath(x)), self.included_shared_modules))
+    self.extract_includes()
 
     paths = self.get_all_odin_file_paths()
     completions = []
