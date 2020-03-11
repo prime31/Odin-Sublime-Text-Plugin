@@ -9,4 +9,4 @@ Download or clone this repo into your Sublime Text 3 Packages folder (found via 
 
 
 ## Acknowledgements
-This whole plugin started out as a copy of [JaiTools](https://github.com/RobinWragg/JaiTools), since Jai and Odin are pretty simalar.
+This whole plugin started out as a copy of [JaiTools](https://github.com/RobinWragg/JaiTools), since Jai and Odin are fairly similar.
