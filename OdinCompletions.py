@@ -4,6 +4,7 @@ import re
 import os
 import fnmatch
 import time
+from Odin import completer
 
 
 class OdinCompletions(sublime_plugin.EventListener):
@@ -31,6 +32,12 @@ class OdinCompletions(sublime_plugin.EventListener):
   before_dot = None
 
   built_in_procs = ["len()", "cap()", "size_of()", "align_of()", "offset_of()", "typeid_of()", "type_of()", "type_info_of()", "swizzle()", "complex()", "real()", "imag()", "conj()", "expand_to_tuple()", "min()", "max()", "abs()", "clamp()", "#assert", "#location"]
+
+  def alias_for_module(self, module):
+    for k, v in self.alias_to_module.items():
+      if v == module:
+        return k
+    return module
 
   def view_is_odin(self, view):
     self.view = view
@@ -284,6 +291,13 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.included_local_modules.append(module)
 
   def on_query_completions(self, view, prefix, locations):
+    # cleanup before we start
+    self.alias_to_module.clear()
+    self.included_core_modules.clear()
+    self.included_shared_modules.clear()
+    self.included_local_modules.clear()
+    self.before_dot = None
+
     start_time = time.time()
 
     if not self.view_is_odin(view):
@@ -309,11 +323,11 @@ class OdinCompletions(sublime_plugin.EventListener):
     # if we have not . in the text on the current line add the included module names as completions
     if self.before_dot == None:
       for mod in self.included_local_modules:
-        completions.append(['Module: ' + mod, mod])
+        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       for mod in self.included_core_modules:
-        completions.append(['Module: ' + mod, mod])
+        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       for mod in self.included_shared_modules:
-        completions.append(['Module: ' + mod, mod])
+        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       for proc in self.built_in_procs:
         completions.append([proc + '\tBuilt-in', proc])
 

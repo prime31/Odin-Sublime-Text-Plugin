@@ -7,20 +7,20 @@ import threading
 from functools import partial
 
 class CommandHelper(object):
-		@staticmethod
-		def get_path(cmd, paths):
-				try:
-						return paths[0]
-				except IndexError:
-						return cmd.window.active_view().file_name()
+	@staticmethod
+	def get_path(cmd, paths):
+			try:
+					return paths[0]
+			except IndexError:
+					return cmd.window.active_view().file_name()
 
-		@staticmethod
-		def copy_to_clipboard(cmd, data):
-				sublime.set_clipboard(data)
-				lines = len(data.split('\n'))
-				cmd.window.status_message('Copied {} to clipboard'.format(
-						'{} lines'.format(lines) if lines > 1 else '"{}"'.format(data)
-				))
+	@staticmethod
+	def copy_to_clipboard(cmd, data):
+			sublime.set_clipboard(data)
+			lines = len(data.split('\n'))
+			cmd.window.status_message('Copied {} to clipboard'.format(
+					'{} lines'.format(lines) if lines > 1 else '"{}"'.format(data)
+			))
 
 
 class OpenInFinderCommand(sublime_plugin.WindowCommand):
