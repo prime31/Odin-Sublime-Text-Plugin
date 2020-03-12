@@ -4,5 +4,13 @@
 	"shell_cmd": "odin run $file",
 	"working_dir": "$file_path",
 	"quiet": true,
-	"file_regex": "^(.*?)\\((\\d+):(\\d+)\\)\\s(.*?)$"
+	"file_regex": "^(.*?)\\((\\d+):(\\d+)\\)\\s(.*?)$",
+
+	"variants" : [
+		{
+			"name": "Run with Metal",
+			"cmd": ["odin", "run", "-define:METAL=1", "$file"],
+			"shell_cmd": "odin run $file -define:METAL=1",
+		}
+	]
 }
