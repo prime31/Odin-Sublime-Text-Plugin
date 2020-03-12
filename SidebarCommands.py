@@ -6,6 +6,7 @@ import threading
 
 from functools import partial
 
+
 class CommandHelper(object):
 	@staticmethod
 	def get_path(cmd, paths):
@@ -21,6 +22,13 @@ class CommandHelper(object):
 		cmd.window.status_message('Copied {} to clipboard'.format(
 				'{} lines'.format(lines) if lines > 1 else '"{}"'.format(data)
 		))
+
+
+
+class CloneRightCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        self.window.run_command("create_pane",        {"direction": "right"})
+        self.window.run_command("clone_file_to_pane", {"direction": "right"})
 
 
 class OpenInFinderCommand(sublime_plugin.WindowCommand):
