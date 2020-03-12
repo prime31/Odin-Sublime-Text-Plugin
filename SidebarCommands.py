@@ -9,18 +9,18 @@ from functools import partial
 class CommandHelper(object):
 	@staticmethod
 	def get_path(cmd, paths):
-			try:
-					return paths[0]
-			except IndexError:
-					return cmd.window.active_view().file_name()
+		try:
+			return paths[0]
+		except IndexError:
+			return cmd.window.active_view().file_name()
 
 	@staticmethod
 	def copy_to_clipboard(cmd, data):
-			sublime.set_clipboard(data)
-			lines = len(data.split('\n'))
-			cmd.window.status_message('Copied {} to clipboard'.format(
-					'{} lines'.format(lines) if lines > 1 else '"{}"'.format(data)
-			))
+		sublime.set_clipboard(data)
+		lines = len(data.split('\n'))
+		cmd.window.status_message('Copied {} to clipboard'.format(
+				'{} lines'.format(lines) if lines > 1 else '"{}"'.format(data)
+		))
 
 
 class OpenInFinderCommand(sublime_plugin.WindowCommand):
@@ -33,6 +33,20 @@ class OpenInFinderCommand(sublime_plugin.WindowCommand):
 
 		self.window.run_command("exec", {
 			"cmd": ["open", path],
+			"shell": False
+			})
+
+
+class OpenInTerminalCommand(sublime_plugin.WindowCommand):
+	def run(self, paths):
+		path = CommandHelper.get_path(self, paths)
+
+		# ensure we have a folder and not a file
+		if os.path.isfile(path):
+			path = os.path.split(os.path.abspath(path))[0]
+
+		self.window.run_command("exec", {
+			"cmd": ["open", "-a", "Terminal", path],
 			"shell": False
 			})
 

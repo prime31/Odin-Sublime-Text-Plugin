@@ -5,6 +5,12 @@
  		"command": "open_in_finder",
 		"args": {"paths": []}
  	},
+    {
+ 		"caption": "Open in Terminal…",
+		"id": "odin-open-in-terminal",
+ 		"command": "open_in_terminal",
+		"args": {"paths": []}
+ 	},
 	{
 		"caption": "Duplicate…",
 		"id": "odin-duplicate",
