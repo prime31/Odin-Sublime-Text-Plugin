@@ -17,7 +17,13 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 		# build up a run command to happen after the build command
 		lib_path = '.:' + ':'.join(native_dirs)
 		os.environ['DYLD_LIBRARY_PATH'] = lib_path
-		args.extend(['||', 'export', 'DYLD_LIBRARY_PATH=' + lib_path + ';', './' + vars['file_base_name']])
+
+		exe_exists = '[ -f ' + os.path.join(vars['file_path'], vars['file_base_name']) + ' ]'
+		args.extend(['&&', 'export', 'DYLD_LIBRARY_PATH=' + lib_path + ';', exe_exists, '&&', './' + vars['file_base_name']])
+
+		# kill the old exe so that we fail to run anything if we dont build
+		if os.path.exists(vars['file_base_name']):
+			os.remove(vars['file_base_name'])
 
 		self.window.active_view().window().run_command('exec', {
 			'shell': True,
