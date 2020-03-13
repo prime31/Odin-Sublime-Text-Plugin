@@ -13,7 +13,7 @@ contexts:
     - include: common
     - match: '{'
       push: block
-  
+
   block:
     - include: common
     - meta_scope: meta.block.odin
@@ -63,13 +63,13 @@ contexts:
     - match: '\b\w+(?=\s*:.*?(?:[:=].*?)?;)'
       scope: entity.name.variable.odin
       push: variable-def
-    - match: '\b(?:return|if|then|else|for|break|continue|it|it_index|struct|using)\b'
+    - match: '\b(?:return|if|then|else|for|break|continue|it|it_index|struct|using|when)\b'
       scope: keyword.odin
     - include: storage-type
     - include: expression
     - match: ';'
       scope: punctuation.terminator.odin
-  
+
   herestring-content:
     - meta_scope: string.unquoted.odin
 
@@ -81,7 +81,9 @@ contexts:
       scope: constant.other.placeholder.odin
     - match: '"'
       pop: true
-    
+    - match: "'"
+      pop: true
+
   multiline-comment:
     - match: /\*
       push:
@@ -89,7 +91,7 @@ contexts:
         - meta_scope: comment.block.odin
         - match: \*/
           pop: true
-  
+
   comment:
     - include: multiline-comment
     - match: //
@@ -97,7 +99,7 @@ contexts:
         - meta_scope: comment.line.odin
         - match: $
           pop: true
-  
+
   expression:
     - include: comment
     - match: '"'
@@ -134,11 +136,11 @@ contexts:
       scope: keyword.operator.assignment.odin
     - match: '='
       scope: keyword.operator.assignment.odin
-  
+
   storage-type:
     - match: '\b(?:Any|void|string|bool|float|float32|float64|int|u8|u16|u32|u64|s8|s16|s32|s64)\b'
       scope: storage.type.odin
-  
+
   params:
     - meta_content_scope: meta.function.parameters.odin
     - include: comment
@@ -151,7 +153,7 @@ contexts:
       scope: punctuation.separator.odin
     - match: '\)'
       pop: true
-    
+
   function-def:
     - meta_scope: meta.function.odin
     - include: comment
@@ -172,7 +174,7 @@ contexts:
       scope: keyword.odin
     - match: '(?=\s*{)'
       pop: true
-  
+
   enum-def:
     - meta_scope: meta.enum.odin
     - include: comment
@@ -182,7 +184,7 @@ contexts:
       scope: keyword.odin
     - match: '(?=\s*{)'
       pop: true
-  
+
   variable-def:
     - meta_scope: meta.variable.odin
     - include: comment

@@ -311,7 +311,9 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     # this needs to check if the '.' is not just in the line but connected to the text we are typing
     if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
-      self.before_dot = curr_line.rsplit('.', 1)[0]
+      space_index = curr_line.rfind(' ') + 1
+      dot_index = curr_line.rindex('.')
+      self.before_dot = curr_line[space_index:dot_index]
     else:
       self.before_dot = None
 
