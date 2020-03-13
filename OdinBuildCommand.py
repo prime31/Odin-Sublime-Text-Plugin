@@ -23,7 +23,7 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 			'shell': True,
 			'shell_cmd': ' '.join(args),
 			'quiet': True,
-			'working_dir' : os.path.dirname(vars['file_path']),
+			'working_dir' : vars['file_path'],
 			'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$'
 		})
 
