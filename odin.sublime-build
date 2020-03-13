@@ -1,16 +1,35 @@
+// Custom OdinBuildCommand script that gathers all the dylib folders
+{
+	"target": "odin_build",
+	"selector": "source.odin",
+	"variants": [
+        {
+            "name": "Metal",
+            "metal": true
+        }
+    ]
+}
+
+
+
+
+/* // Manual build commands. Basically the same as the OdinBuildCommand but requires manual babysitting when new dylibs are added
 {
 	"selector": "source.odin",
 	"file_patterns": ["*.odin"],
-	"shell_cmd": "odin run $file",
+	"shell_cmd": "odin build $file && export DYLD_LIBRARY_PATH=.:~/odin/shared/engine/libs/flecs/native:~/odin/shared/engine/libs/flextgl/native:~/odin/shared/engine/libs/imgui/native:~/odin/shared/engine/libs/sokol/native:~/odin/shared/engine/libs/flecs/native; ./$file_base_name",
 	"working_dir": "$file_path",
 	"quiet": true,
 	"file_regex": "^(.*?)\\((\\d+):(\\d+)\\)\\s(.*?)$",
+	"env": {
+		"DYLD_LIBRARY_PATH": "~/odin/shared/engine/libs/flecs/native:~/odin/shared/engine/libs/flextgl/native:~/odin/shared/engine/libs/imgui/native:~/odin/shared/engine/libs/sokol/native:~/odin/shared/engine/libs/flecs/native"
+	},
 
 	"variants" : [
 		{
 			"name": "Run with Metal",
-			"cmd": ["odin", "run", "-define:METAL=1", "$file"],
-			"shell_cmd": "odin run $file -define:METAL=1",
+			"shell_cmd": "odin build $file -define:METAL=1 && export DYLD_LIBRARY_PATH=.:~/odin/shared/engine/libs/flecs/native:~/odin/shared/engine/libs/flextgl/native:~/odin/shared/engine/libs/imgui/native:~/odin/shared/engine/libs/sokol/native:~/odin/shared/engine/libs/flecs/native; ./$file_base_name"
 		}
 	]
 }
+*/
