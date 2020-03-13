@@ -257,13 +257,13 @@ class OdinCompletions(sublime_plugin.EventListener):
       char = file_view.substr(sublime.Region(loc - 1, loc))
       if char == '.':
         return True
-        break;
+        break
 
       if char.isalnum() or char == '_':
         loc -= 1
       else:
         return False
-        break;
+        break
 
   def extract_includes(self):
     contents = self.get_file_contents(sublime.active_window().active_view().file_name())
