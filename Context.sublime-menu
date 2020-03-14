@@ -1,6 +1,19 @@
 [
     {
-        "caption": "Screaming Snake to Ada Case Selection",
-        "command": "ada_case_selection"
+        "caption": "Text Transformations",
+        "children": [
+            {
+                "caption": "Screaming Snake to Ada Case Selection",
+                "command": "ada_case_selection"
+            },
+            {
+                "caption": "To Upper Selection",
+                "command": "to_upper_selection"
+            },
+            {
+                "caption": "To Lower Selection",
+                "command": "to_lower_selection"
+            }
+        ]
     }
 ]

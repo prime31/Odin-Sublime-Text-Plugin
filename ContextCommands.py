@@ -13,7 +13,7 @@ class AdaCaseSelectionCommand(sublime_plugin.TextCommand):
 		for region in regions_by_line:
 			txt = self.view.substr(region)
 			new_txt = ''
-			print('--- before: ' + txt)
+
 			txt = txt.lower()
 			upper_next = True
 			lower_next = False
@@ -34,3 +34,24 @@ class AdaCaseSelectionCommand(sublime_plugin.TextCommand):
 					new_txt += txt[i]
 			self.view.replace(edit, region, new_txt)
 
+
+class ToUpperSelectionCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		sel = self.view.sel()
+		for selection in sel:
+			regions_by_line = self.view.split_by_newlines(selection)
+
+			for region in regions_by_line:
+				txt = self.view.substr(region)
+				self.view.replace(edit, region, txt.upper())
+
+
+class ToLowerSelectionCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		sel = self.view.sel()
+		for selection in sel:
+			regions_by_line = self.view.split_by_newlines(selection)
+
+			for region in regions_by_line:
+				txt = self.view.substr(region)
+				self.view.replace(edit, region, txt.lower())
