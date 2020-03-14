@@ -257,13 +257,11 @@ class OdinCompletions(sublime_plugin.EventListener):
       char = file_view.substr(sublime.Region(loc - 1, loc))
       if char == '.':
         return True
-        break
 
       if char.isalnum() or char == '_':
         loc -= 1
       else:
         return False
-        break
 
   def extract_includes(self):
     contents = self.get_file_contents(sublime.active_window().active_view().file_name())
@@ -308,6 +306,15 @@ class OdinCompletions(sublime_plugin.EventListener):
     file_view = sublime.active_window().find_open_file(view.file_name())
     curr_line_region = file_view.line(locations[0])
     curr_line = file_view.substr(curr_line_region).strip()
+
+    # if we are in a comment line bail out with no completions
+    loc = locations[0]
+    if curr_line.find('//') >= 0:
+      while loc > curr_line_region.begin():
+        block = file_view.substr(sublime.Region(loc - 2, loc))
+        if block == '//':
+          return []
+        loc -= 1
 
     # this needs to check if the '.' is not just in the line but connected to the text we are typing
     if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
