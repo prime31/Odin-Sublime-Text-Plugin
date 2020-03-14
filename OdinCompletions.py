@@ -247,9 +247,9 @@ class OdinCompletions(sublime_plugin.EventListener):
   # return True if the next char is empty or a newline and all the previous chars are valid proc/var name chars up to the '.'
   def is_dot_completion(self, file_view, loc):
     # next char should be some type of space, ie we are not in a word typing
-    next_char = file_view.substr(sublime.Region(loc, loc + 1))
-    if next_char not in ['\n', '', ' ']:
-      return False
+    # next_char = file_view.substr(sublime.Region(loc, loc + 1))
+    # if next_char not in ['\n', '', ' ']:
+    #   return False
 
     # walk backwards until we find a '.'. If we hit a non-proc/var char bail out since this isnt a completion
     curr_line_region = file_view.line(loc)

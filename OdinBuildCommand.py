@@ -30,7 +30,8 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 			'shell_cmd': ' '.join(args),
 			'quiet': True,
 			'working_dir' : vars['file_path'],
-			'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$'
+			'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
+			'syntax': 'BuildOutput.sublime-syntax'
 		})
 
 	# fetches all the paths that have dylibs in them in folders named 'navtive' in the 'odin/shared' folder

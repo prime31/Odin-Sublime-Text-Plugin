@@ -1,0 +1,15 @@
+%YAML 1.2
+---
+name: BuildOutput
+hidden: true
+scope: source.build_output
+contexts:
+  main:
+    - match: '^(..[^:\n]*):([0-9]+):?([0-9]+)?:? '
+      scope: entity.name.filename
+    - match: '^error:.*'
+      scope: string.quoted.double.odin
+    - match: '^warning:.*'
+      scope: entity.name.enum.odin
+    - match: '^\[.+\]$'
+      scope: comment
