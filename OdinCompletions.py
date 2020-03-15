@@ -4,7 +4,7 @@ import re
 import os
 import fnmatch
 import time
-from Odin import completer
+# from Odin import completer
 
 
 class OdinCompletions(sublime_plugin.EventListener):
@@ -18,7 +18,7 @@ class OdinCompletions(sublime_plugin.EventListener):
   shared_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:shared:)+(.*?)\"')
   local_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:[a-zA-Z0-9]+\/)+(.*?)\"')
 
-  definition_pattern = re.compile(r'\b\w+\s*:[\w\W]*?[{;]')
+  definition_pattern = re.compile(r'\b\w+\s*:[\w\W]*?(?:[{;]|[-]{3})')
   struct_pattern = re.compile(r'(\b\w+)\s*::\s*struct\s*[\w\W]*?[{;]')
   line_comment_pattern = re.compile(r'//.*?(?=\n)')
   proc_pattern = re.compile(r'\b(\w+)\s*:\s*[:=]\s*proc\(([\w\W]*?)\)\s*(?:->\s*(.*?)\s)?')
@@ -31,7 +31,7 @@ class OdinCompletions(sublime_plugin.EventListener):
   included_shared_modules = []
   before_dot = None
 
-  built_in_procs = ["len()", "cap()", "size_of()", "align_of()", "offset_of()", "typeid_of()", "type_of()", "type_info_of()", "swizzle()", "complex()", "real()", "imag()", "conj()", "expand_to_tuple()", "min()", "max()", "abs()", "clamp()", "#assert", "#location"]
+  built_in_procs = [['len(array: Array_Type) -> int \tBuilt-in', 'len(${1:array: Array_Type})']]
 
   def alias_for_module(self, module):
     for k, v in self.alias_to_module.items():
@@ -68,21 +68,26 @@ class OdinCompletions(sublime_plugin.EventListener):
     is_user_module_completion = word_before_dot in self.included_local_modules
     is_var_field_access = word_before_dot != None and not is_core_module_completion and not is_user_module_completion and not is_shared_module_completion
 
-    if not is_core_module_completion and not is_shared_module_completion and not is_var_field_access:
-      # Get odin file paths from all open folders
-      for folder in window.folders():
-        for root, dirs, files in os.walk(folder):
-          dirs[:] = list(filter(lambda x: not x in self.exclude_dirs, dirs))
-          for file in fnmatch.filter(files, '*.odin'):
-            file_path = os.path.join(root, file)
-            paths.add(file_path)
+    if word_before_dot == None and not is_var_field_access:
+      paths.add(os.path.expanduser('~/odin/core/builtin/builtin.odin'))
+      paths.add(self.view.file_name())
 
-      # Load all open odin files from views in case they're external files
-      # for view in window.views():
-      #   file_path = view.file_name()
+    # TODO: do we ever want to add all the paths? this seems like way overkill and not accurate
+    # if not is_core_module_completion and not is_shared_module_completion and not is_var_field_access:
+    #   # Get odin file paths from all open folders
+    #   for folder in window.folders():
+    #     for root, dirs, files in os.walk(folder):
+    #       dirs[:] = list(filter(lambda x: not x in self.exclude_dirs, dirs))
+    #       for file in fnmatch.filter(files, '*.odin'):
+    #         file_path = os.path.join(root, file)
+    #         paths.add(file_path)
 
-      #   if file_path != None and file_path[-5:] == '.odin' and not file_path in paths:
-      #     paths.add(file_path)
+    #   Load all open odin files from views in case they're external files
+    #   for view in window.views():
+    #     file_path = view.file_name()
+
+    #     if file_path != None and file_path[-5:] == '.odin' and not file_path in paths:
+    #       paths.add(file_path)
 
     if is_shared_module_completion and not is_var_field_access:
       # include any imported shared modules
@@ -301,7 +306,6 @@ class OdinCompletions(sublime_plugin.EventListener):
     if not self.view_is_odin(view):
       return None
 
-
     # extract the current text if there is a '.' and get the previous word to see if it matches a package
     file_view = sublime.active_window().find_open_file(view.file_name())
     curr_line_region = file_view.line(locations[0])
@@ -329,7 +333,8 @@ class OdinCompletions(sublime_plugin.EventListener):
     paths = self.get_all_odin_file_paths()
     completions = []
 
-    # if we have not . in the text on the current line add the included module names as completions
+    # if we have no . in the text on the current line add the included module names and builtins as completions
+    # TODO: add local variables
     if self.before_dot == None:
       for mod in self.included_local_modules:
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
@@ -337,8 +342,6 @@ class OdinCompletions(sublime_plugin.EventListener):
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       for mod in self.included_shared_modules:
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
-      for proc in self.built_in_procs:
-        completions.append([proc + '\tBuilt-in', proc])
 
     for path in reversed(list(paths)):
       completions += self.get_completions_from_file_path(path)
