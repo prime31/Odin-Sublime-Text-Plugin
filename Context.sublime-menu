@@ -13,6 +13,10 @@
             {
                 "caption": "To Lower Selection",
                 "command": "to_lower_selection"
+            },
+            {
+                "caption": "V to Odin Struct",
+                "command": "v_to_odin_struct"
             }
         ]
     }

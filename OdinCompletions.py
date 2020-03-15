@@ -249,7 +249,7 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     return completions
 
-  # return True if the next char is empty or a newline and all the previous chars are valid proc/var name chars up to the '.'
+  # return True (if the next char is empty or a newline and) all the previous chars are valid proc/var name chars up to the '.'
   def is_dot_completion(self, file_view, loc):
     # next char should be some type of space, ie we are not in a word typing
     # next_char = file_view.substr(sublime.Region(loc, loc + 1))
@@ -322,9 +322,12 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     # this needs to check if the '.' is not just in the line but connected to the text we are typing
     if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
-      space_index = curr_line.rfind(' ') + 1
-      dot_index = curr_line.rindex('.')
-      self.before_dot = curr_line[space_index:dot_index]
+      pre_cursor_range = file_view.substr(sublime.Region(curr_line_region.begin(), loc))
+      space_index = pre_cursor_range.rfind(' ') + 1
+      tab_index = pre_cursor_range.rfind('\t') + 1
+      start_index = max(space_index, tab_index)
+      dot_index = pre_cursor_range.rindex('.')
+      self.before_dot = pre_cursor_range[start_index:dot_index]
     else:
       self.before_dot = None
 
