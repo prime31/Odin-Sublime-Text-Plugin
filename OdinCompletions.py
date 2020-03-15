@@ -31,7 +31,10 @@ class OdinCompletions(sublime_plugin.EventListener):
   included_shared_modules = []
   before_dot = None
 
-  built_in_procs = [['len(array: Array_Type) -> int \tBuilt-in', 'len(${1:array: Array_Type})']]
+  built_in_procs = [
+    ['make(array_map: Array_Map_Type, size: int) \tBuilt-in', 'make(${1:array_map: Array_Map_Type}, ${2:size: int})'],
+    ['append(array_map: ^Array_Map_Type, arg: $E) \tBuilt-in', 'append(${1:array_map: Array_Map_Type}, ${2:arg: $E})']
+  ]
 
   def alias_for_module(self, module):
     for k, v in self.alias_to_module.items():
@@ -345,6 +348,7 @@ class OdinCompletions(sublime_plugin.EventListener):
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       for mod in self.included_shared_modules:
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
+      completions.extend(self.built_in_procs)
 
     for path in reversed(list(paths)):
       completions += self.get_completions_from_file_path(path)
