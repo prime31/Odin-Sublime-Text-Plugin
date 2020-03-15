@@ -5,9 +5,9 @@ import shutil
 
 
 class OdinBuildCommand(sublime_plugin.WindowCommand):
-	def run(self, metal=False):
+	def run(self, metal=False, opt_level=0):
 		vars = self.window.extract_variables()
-		args = ['odin', 'build', vars['file']]
+		args = ['odin', 'build', vars['file'], '-opt=' + str(opt_level)]
 		if metal:
 			args.append('-define:METAL=1')
 

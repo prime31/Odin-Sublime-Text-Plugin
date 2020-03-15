@@ -6,6 +6,10 @@
         {
             "name": "Metal",
             "metal": true
+        },
+        {
+            "name": "Build With Opt Level 3",
+            "opt_level": 3
         }
     ]
 }
