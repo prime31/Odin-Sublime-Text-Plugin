@@ -4,7 +4,7 @@ import re
 import os
 import fnmatch
 import time
-# from Odin import completer
+from Odin import completer
 
 
 class OdinCompletions(sublime_plugin.EventListener):
@@ -349,6 +349,8 @@ class OdinCompletions(sublime_plugin.EventListener):
       for mod in self.included_shared_modules:
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       completions.extend(self.built_in_procs)
+
+    # c = completer.Completer(view.file_name())
 
     for path in reversed(list(paths)):
       completions += self.get_completions_from_file_path(path)
