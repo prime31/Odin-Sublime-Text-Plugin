@@ -2,6 +2,7 @@
 # import sublime_plugin
 import re
 import os
+import time
 import json
 import subprocess
 
@@ -18,7 +19,7 @@ import subprocess
 # completions come in a few different flavors based on the context of the cursor:
 #	- naked: there is no previous '.' in the completion string. Completions here could be:
 #		- procs in the current package
-#		- types in the package
+#		- types in the current package
 #		- module names (or aliases if used) for any imports
 #		- local variable names
 #	- dotted module: there is 'module.' and the word before the '.' is a module name or alias
@@ -28,6 +29,10 @@ import subprocess
 #	- dotted non-module:
 #		- most likely a local variable. Too hard to figure out its type so forget it.
 class Completer(object):
+	full_reindex_interval_secs = 60
+	last_full_reindex_secs = -full_reindex_interval_secs # Ensure re-indexing happens on launch
+	last_indexed_file = ''
+
 	packages = []
 	procs_by_package = dict()
 	types_by_package = dict()
@@ -35,10 +40,25 @@ class Completer(object):
 
 	proc_params_pattern = re.compile(r'.*?proc.*?(\(.*?)$')
 
-	def __init__(self, current_file):
-		self.index_file(current_file)
+	# we re-index if this is a different file than was last indexed or it has been longer than
+	# full_reindex_interval_secs
+	def needs_reindex(self, current_file):
+		if self.last_indexed_file != current_file:
+			self.last_indexed_file = current_file
+			return True
+
+		if time.time() - self.last_full_reindex_secs > self.full_reindex_interval_secs:
+			return True
+		return False
 
 	def index_file(self, current_file):
+		if not self.needs_reindex(current_file):
+			return
+
+		contents = open(current_file, 'r', encoding='utf-8').read()
+		if contents.find('main :: proc') == -1:
+			return
+
 		output = subprocess.check_output(['odin', 'query', current_file, '-global-definitions'])
 
 		js = json.loads(output.decode('utf-8'))
@@ -69,11 +89,7 @@ class Completer(object):
 				self.vars_for_package(package).append([name + '\t' + d.get('type_kind', package), name])
 			elif kind == 'procedure':
 				self.procs_for_package(package).append(self.gen_completion_for_proc(package, name, typ))
-
-		type_kind_set = set(type_kind)
-		kinds_set = set(kinds)
-		types_set = set(types)
-		#print(self.vars_by_package)
+		self.last_full_reindex_secs = time.time()
 
 	def gen_completion_for_proc(self, package, name, sig):
 		parts = list(map(lambda s:s.strip(), sig.split('->')))
@@ -90,24 +106,31 @@ class Completer(object):
 				result += '${' + str(p + 1) + ':' + params[p] + '}'
 		result += ')'
 
-		return [[trigger + '\t' + package]]
+		return [trigger + '\t' + package, result]
 
 	def procs_for_package(self, package):
 		if not package in self.procs_by_package:
 			self.procs_by_package[package] = []
+		else:
+			self.procs_by_package[package].clear()
 		return self.procs_by_package[package]
 
 	def types_for_package(self, package):
 		if not package in self.types_by_package:
 			self.types_by_package[package] = []
+		else:
+			self.types_by_package[package].clear()
 		return self.types_by_package[package]
 
 	def vars_for_package(self, package):
 		if not package in self.vars_by_package:
 			self.vars_by_package[package] = []
+		else:
+			self.vars_by_package[package].clear()
 		return self.vars_by_package[package]
 
 
 
 
-c = Completer('/Users/mikedesaro/odin/shared/engine/input/input.odin')
+#c = Completer()
+#c.index_file('/Users/mikedesaro/odin/shared/engine/input/input.odin')

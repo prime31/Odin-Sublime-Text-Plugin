@@ -8,6 +8,7 @@ from Odin import completer
 
 
 class OdinCompletions(sublime_plugin.EventListener):
+  completer = completer.Completer()
   # when filtering for user dirs exclude these. Note that 'libs' is excluded only because 'projects' is in 'shared' temporarily
   exclude_dirs = set(['.git', 'libs'])
   alias_to_module = dict()
@@ -252,7 +253,7 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     return completions
 
-  # return True (if the next char is empty or a newline and) all the previous chars are valid proc/var name chars up to the '.'
+  # return True (if the next char is empty or a newline) and all the previous chars are valid proc/var name chars up to the '.'
   def is_dot_completion(self, file_view, loc):
     # next char should be some type of space, ie we are not in a word typing
     # next_char = file_view.substr(sublime.Region(loc, loc + 1))
@@ -296,6 +297,11 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.alias_to_module[alias] = module
       self.included_local_modules.append(module)
 
+  def on_activated_async(self, view):
+    pass
+    # this only works if the code is able to be compiled and we are in a file with main()
+    #self.completer.index_file(view.file_name())
+
   def on_query_completions(self, view, prefix, locations):
     # cleanup before we start
     self.alias_to_module.clear()
@@ -336,6 +342,11 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     self.extract_includes()
 
+    if self.before_dot == 'sdl2':
+      print('wtf', self.completer.procs_by_package)
+      return self.completer.procs_by_package[self.before_dot]
+      print('------------', self.before_dot)
+
     paths = self.get_all_odin_file_paths()
     completions = []
 
@@ -349,8 +360,6 @@ class OdinCompletions(sublime_plugin.EventListener):
       for mod in self.included_shared_modules:
         completions.append(['Module: ' + mod, self.alias_for_module(mod)])
       completions.extend(self.built_in_procs)
-
-    # c = completer.Completer(view.file_name())
 
     for path in reversed(list(paths)):
       completions += self.get_completions_from_file_path(path)
