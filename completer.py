@@ -7,7 +7,7 @@ import json
 import subprocess
 
 
-# JSON consits of two roots: packages and definitions. Some keys are optional, denoted with '?'.
+# JSON consists of two roots: packages and definitions. Some keys are optional, denoted with '?'.
 # 	packages keys: name, fullpath, files (list)
 #	definitions keys: package, name, filepath, line, column, file_offset, kind, type_kind?, type?, size?, align?
 #		kinds: procedure group, constant, type name, variable, procedure
@@ -36,7 +36,7 @@ class Completer(object):
 	packages = []
 	procs_by_package = dict()
 	types_by_package = dict()
-	vars_by_package = dict() # includes the kinds constant and variable
+	vars_by_package = dict() # includes the kinds 'constant' and 'variable'
 
 	proc_params_pattern = re.compile(r'.*?proc.*?(\(.*?)$')
 

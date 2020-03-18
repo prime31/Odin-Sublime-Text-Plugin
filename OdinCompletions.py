@@ -5,6 +5,7 @@ import os
 import fnmatch
 import time
 from Odin import completer
+from Odin import parser
 
 
 class OdinCompletions(sublime_plugin.EventListener):
@@ -26,7 +27,10 @@ class OdinCompletions(sublime_plugin.EventListener):
   proc_differentiator_pattern = re.compile(r'proc\(.*?\)')
   proc_params_pattern = re.compile(r'(?:^|)\s*([^,]+?)\s*(?:$|,)')
 
+  # the module of the current file
   current_module = ''
+  # the module we are completing (ie fmt.nnn would be 'fmt')
+  search_module = None
   included_core_modules = []
   included_local_modules = []
   included_shared_modules = []
@@ -44,7 +48,6 @@ class OdinCompletions(sublime_plugin.EventListener):
     return module
 
   def view_is_odin(self, view):
-    self.view = view
     settings = view.settings()
 
     if settings != None:
@@ -74,7 +77,7 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     if word_before_dot == None and not is_var_field_access:
       paths.add(os.path.expanduser('~/odin/core/builtin/builtin.odin'))
-      paths.add(self.view.file_name())
+      paths.add(sublime.active_window().active_view().file_name())
 
     # TODO: do we ever want to add all the paths? this seems like way overkill and not accurate
     # if not is_core_module_completion and not is_shared_module_completion and not is_var_field_access:
@@ -119,6 +122,7 @@ class OdinCompletions(sublime_plugin.EventListener):
 
     # if we have some module prefix then filter so we only include files in that module
     if (is_core_module_completion or is_user_module_completion or is_shared_module_completion) and not is_var_field_access:
+      self.search_module = word_before_dot
       filter_txt = '*' + word_before_dot + '/*.odin'
       paths = fnmatch.filter(paths, filter_txt)
 
@@ -131,12 +135,7 @@ class OdinCompletions(sublime_plugin.EventListener):
       with open(file_path, 'r', encoding='utf-8') as f:
         return f.read()
     else:
-      entire_buffer = file_view.find('[\w\W]*', 0)
-
-      if entire_buffer == None:
-        return ''
-      else:
-        return file_view.substr(entire_buffer)
+      return file_view.substr(sublime.Region(0, file_view.size()))
 
   def strip_block_comments(self, odin_text):
     non_comments = []
@@ -166,7 +165,7 @@ class OdinCompletions(sublime_plugin.EventListener):
   def strip_imports(self, odin_text):
     return self.import_pattern.sub('', odin_text)
 
-  def make_completions_from_proc_components(self, proc_name, params, return_type, file_name):
+  def make_completion_from_proc_components(self, proc_name, params, return_type, file_name):
     trigger = proc_name + '('
     result = proc_name + '('
 
@@ -188,7 +187,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     trigger += '\t ' + file_name
 
     # proc completion
-    completions = [[trigger, result]]
+    completion = [trigger, result]
 
     # TODO: not sure these are required. they make the results too noisy
     # param completions
@@ -196,13 +195,13 @@ class OdinCompletions(sublime_plugin.EventListener):
     #   completion = self.make_completion_from_variable_definition(param, file_name)
     #   completions.append(completion)
 
-    return completions
+    return completion
 
   def extract_definitions_from_text(self, odin_text):
     defs = self.definition_pattern.findall(odin_text)
     return list(set(defs))
 
-  def make_completions_from_proc_definition(self, definition, file_name):
+  def make_completion_from_proc_definition(self, definition, file_name):
     match = self.proc_pattern.match(definition)
     if match == None:
       return []
@@ -218,7 +217,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     if len(params_list) == 1 and params_list[0].strip() == '':
       params_list = []
 
-    return self.make_completions_from_proc_components(proc_name, params_list, return_type, file_name)
+    return self.make_completion_from_proc_components(proc_name, params_list, return_type, file_name)
 
   def make_completion_from_variable_definition(self, definition, file_name):
     colon_index = definition.find(':')
@@ -249,7 +248,7 @@ class OdinCompletions(sublime_plugin.EventListener):
         #print('[[' + definition + ']] ---- ' + completion[0])
         #completions.append(completion)
       else:
-        completions += self.make_completions_from_proc_definition(definition, file_name)
+        completions.append(self.make_completion_from_proc_definition(definition, file_name))
 
     return completions
 
@@ -273,7 +272,7 @@ class OdinCompletions(sublime_plugin.EventListener):
         return False
 
   def extract_includes(self):
-    contents = self.get_file_contents(sublime.active_window().active_view().file_name())
+    contents = sublime.active_window().active_view().substr(sublime.Region(0, sublime.active_window().active_view().size()))
     self.current_module = self.package_pattern.findall(contents)[0]
     core_modules = self.core_module_pattern.findall(contents)
     shared_modules = self.shared_module_pattern.findall(contents)
@@ -303,19 +302,23 @@ class OdinCompletions(sublime_plugin.EventListener):
     #self.completer.index_file(view.file_name())
 
   def on_query_completions(self, view, prefix, locations):
+    if len(locations) > 1:
+      return None
+
     # cleanup before we start
     self.alias_to_module.clear()
     self.included_core_modules.clear()
     self.included_shared_modules.clear()
     self.included_local_modules.clear()
     self.before_dot = None
-
-    start_time = time.time()
+    self.search_module = None
 
     if not self.view_is_odin(view):
       return None
 
-    # extract the current text if there is a '.' and get the previous word to see if it matches a package
+    start_time = time.time()
+
+    # extract the current text. If there is a '.' get the previous word to see if it matches a package
     file_view = sublime.active_window().find_open_file(view.file_name())
     curr_line_region = file_view.line(locations[0])
     curr_line = file_view.substr(curr_line_region).strip()
@@ -341,12 +344,6 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.before_dot = None
 
     self.extract_includes()
-
-    if self.before_dot == 'sdl2':
-      print('wtf', self.completer.procs_by_package)
-      return self.completer.procs_by_package[self.before_dot]
-      print('------------', self.before_dot)
-
     paths = self.get_all_odin_file_paths()
     completions = []
 
@@ -362,7 +359,10 @@ class OdinCompletions(sublime_plugin.EventListener):
       completions.extend(self.built_in_procs)
 
     for path in reversed(list(paths)):
-      completions += self.get_completions_from_file_path(path)
+      module_or_filename = self.search_module or os.path.split(path)[1]
+      completions += parser.get_completions_from_file(module_or_filename, self.get_file_contents(path))
+      # remove old completions
+      # completions += self.get_completions_from_file_path(path)
 
     # Report time spent building completions before returning
     delta_time_ms = int((time.time() - start_time) * 1000)
