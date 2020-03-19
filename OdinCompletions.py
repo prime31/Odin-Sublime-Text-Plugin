@@ -316,6 +316,12 @@ class OdinCompletions(sublime_plugin.EventListener):
     if not self.view_is_odin(view):
       return None
 
+    # dont bother with completions if we are in a comment block or string
+    scope_name = view.scope_name(locations[0])
+    no_completion_scopes = ['quoted.double', 'quoted.raw', 'comment.line', 'comment.block']
+    if any(part in scope_name for part in no_completion_scopes):
+      return None
+
     start_time = time.time()
 
     # extract the current text. If there is a '.' get the previous word to see if it matches a package
