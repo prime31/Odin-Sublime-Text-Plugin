@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 import re
 import os
+import glob
 import fnmatch
 import time
 from Odin import completer
@@ -12,13 +13,13 @@ class OdinCompletions(sublime_plugin.EventListener):
   completer = completer.Completer()
   # when filtering for user dirs exclude these. Note that 'libs' is excluded only because 'projects' is in 'shared' temporarily
   exclude_dirs = set(['.git', 'libs'])
-  alias_to_module = dict()
+  alias_to_package = dict()
 
   import_pattern = re.compile(r'(import\s.*\n)')
   package_pattern = re.compile(r'package\s(.*)')
-  core_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:core:)+(.*?)\"')
-  shared_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:shared:)+(.*?)\"')
-  local_module_pattern = re.compile(r'import\s([a-zA-Z]+|)\s*\"(?:[a-zA-Z0-9]+\/)+(.*?)\"')
+  core_package_pattern = re.compile(r'import\s(\w+|)\s*\"(?:core:)+(.*?)\"')
+  shared_package_pattern = re.compile(r'import\s(\w+|)\s*\"(?:shared:)+(.*?)\"')
+  local_package_pattern = re.compile(r'import\s(\w+|)\s*\"(?!.*?:)(\w+)+(.*?)\"')
 
   definition_pattern = re.compile(r'\b\w+\s*:[\w\W]*?(?:[{;]|[-]{3})')
   struct_pattern = re.compile(r'(\b\w+)\s*::\s*struct\s*[\w\W]*?[{;]')
@@ -27,13 +28,13 @@ class OdinCompletions(sublime_plugin.EventListener):
   proc_differentiator_pattern = re.compile(r'proc\(.*?\)')
   proc_params_pattern = re.compile(r'(?:^|)\s*([^,]+?)\s*(?:$|,)')
 
-  # the module of the current file
-  current_module = ''
-  # the module we are completing (ie fmt.nnn would be 'fmt')
-  search_module = None
-  included_core_modules = []
-  included_local_modules = []
-  included_shared_modules = []
+  # the package of the current file
+  current_package = ''
+  # the package we are completing (ie fmt.nnn would be 'fmt')
+  search_package = None
+  included_core_packages = []
+  included_local_packages = []
+  included_shared_packages = []
   before_dot = None
 
   built_in_procs = [
@@ -41,11 +42,11 @@ class OdinCompletions(sublime_plugin.EventListener):
     ['append(array_map: ^Array_Map_Type, arg: $E) \tBuilt-in', 'append(${1:array_map: Array_Map_Type}, ${2:arg: $E})']
   ]
 
-  def alias_for_module(self, module):
-    for k, v in self.alias_to_module.items():
-      if v == module:
+  def alias_for_package(self, package):
+    for k, v in self.alias_to_package.items():
+      if v == package:
         return k
-    return module
+    return package
 
   def view_is_odin(self, view):
     settings = view.settings()
@@ -67,64 +68,57 @@ class OdinCompletions(sublime_plugin.EventListener):
     paths = set()
     window = sublime.active_window()
 
-    word_before_dot = self.alias_to_module[self.before_dot] if self.before_dot in self.alias_to_module else self.before_dot
+    word_before_dot = self.alias_to_package[self.before_dot] if self.before_dot in self.alias_to_package else self.before_dot
 
     # use this data to filter so we dont pile on unecessary files to parse
-    is_core_module_completion = word_before_dot in self.included_core_modules
-    is_shared_module_completion = word_before_dot in self.included_shared_modules
-    is_user_module_completion = word_before_dot in self.included_local_modules
-    is_var_field_access = word_before_dot != None and not is_core_module_completion and not is_user_module_completion and not is_shared_module_completion
+    is_core_package_completion = word_before_dot in self.included_core_packages
+    is_shared_package_completion = word_before_dot in self.included_shared_packages
+    is_local_package_completion = word_before_dot in self.included_local_packages
+    is_var_field_access = word_before_dot != None and not is_core_package_completion and not is_local_package_completion and not is_shared_package_completion
 
     if word_before_dot == None and not is_var_field_access:
       paths.add(os.path.expanduser('~/odin/core/builtin/builtin.odin'))
-      paths.add(sublime.active_window().active_view().file_name())
 
-    # TODO: do we ever want to add all the paths? this seems like way overkill and not accurate
-    # if not is_core_module_completion and not is_shared_module_completion and not is_var_field_access:
-    #   # Get odin file paths from all open folders
-    #   for folder in window.folders():
-    #     for root, dirs, files in os.walk(folder):
-    #       dirs[:] = list(filter(lambda x: not x in self.exclude_dirs, dirs))
-    #       for file in fnmatch.filter(files, '*.odin'):
-    #         file_path = os.path.join(root, file)
-    #         paths.add(file_path)
+      # self.current_package is where we will source our files from
+      current_folder = os.path.dirname(sublime.active_window().active_view().file_name())
+      for file in glob.glob(current_folder + '/*.odin'):
+        paths.add(file)
 
-    #   Load all open odin files from views in case they're external files
-    #   for view in window.views():
-    #     file_path = view.file_name()
 
-    #     if file_path != None and file_path[-5:] == '.odin' and not file_path in paths:
-    #       paths.add(file_path)
-
-    if is_shared_module_completion and not is_var_field_access:
-      # include any imported shared modules
-      if len(self.included_shared_modules) > 0:
-        odin_shared_path = os.path.expanduser('~/odin/shared')
-        for root, dirs, files in os.walk(odin_shared_path):
+    if is_local_package_completion and not is_var_field_access:
+      if len(self.included_local_packages) > 0:
+        curr_path = os.path.dirname(sublime.active_window().active_view().file_name())
+        for root, dirs, files in os.walk(curr_path):
+          dirs[:] = list(filter(lambda x: not x == '.git', dirs))
           root_dir = os.path.basename(root)
-          if root_dir in self.included_shared_modules:
+          if root_dir == word_before_dot and root_dir in self.included_local_packages:
             for file in fnmatch.filter(files, '*.odin'):
               paths.add(os.path.join(root, file))
 
-    if is_core_module_completion and not is_var_field_access:
-      # include any imported core modules
-      if len(self.included_core_modules) > 0:
+    if is_shared_package_completion and not is_var_field_access:
+      # include any imported shared packages
+      if len(self.included_shared_packages) > 0:
+        odin_shared_path = os.path.expanduser('~/odin/shared')
+        for root, dirs, files in os.walk(odin_shared_path):
+          dirs[:] = list(filter(lambda x: not x == '.git', dirs))
+          root_dir = os.path.basename(root)
+          if root_dir == word_before_dot and root_dir in self.included_shared_packages:
+            for file in fnmatch.filter(files, '*.odin'):
+              paths.add(os.path.join(root, file))
+
+    if is_core_package_completion and not is_var_field_access:
+      # include any imported core packages
+      if len(self.included_core_packages) > 0:
         odin_lib_path = os.path.expanduser('~/odin/core')
         for root, dirs, files in os.walk(odin_lib_path):
           root_dir = os.path.basename(root)
-          if root_dir in self.included_core_modules:
+          if root_dir == word_before_dot and root_dir in self.included_core_packages:
             # special care for os
             if root_dir == 'os':
               paths.add(os.path.join(root, 'os.odin'))
             else:
               for file in fnmatch.filter(files, '*.odin'):
                 paths.add(os.path.join(root, file))
-
-    # if we have some module prefix then filter so we only include files in that module
-    if (is_core_module_completion or is_user_module_completion or is_shared_module_completion) and not is_var_field_access:
-      self.search_module = word_before_dot
-      filter_txt = '*' + word_before_dot + '/*.odin'
-      paths = fnmatch.filter(paths, filter_txt)
 
     return paths
 
@@ -273,28 +267,30 @@ class OdinCompletions(sublime_plugin.EventListener):
 
   def extract_includes(self):
     contents = sublime.active_window().active_view().substr(sublime.Region(0, sublime.active_window().active_view().size()))
-    self.current_module = self.package_pattern.findall(contents)[0]
-    core_modules = self.core_module_pattern.findall(contents)
-    shared_modules = self.shared_module_pattern.findall(contents)
-    local_modules = self.local_module_pattern.findall(contents)
+    self.current_package = self.package_pattern.findall(contents)[0]
+    core_packages = self.core_package_pattern.findall(contents)
+    shared_packages = self.shared_package_pattern.findall(contents)
+    local_packages = self.local_package_pattern.findall(contents)
 
-    for mod in core_modules:
-      module = os.path.basename(os.path.normpath(mod[1]))
-      alias = mod[0] or module
-      self.alias_to_module[alias] = module
-      self.included_core_modules.append(module)
+    for mod in core_packages:
+      package = os.path.basename(os.path.normpath(mod[1]))
+      alias = mod[0] or package
+      self.alias_to_package[alias] = package
+      self.included_core_packages.append(package)
 
-    for mod in shared_modules:
-      module = os.path.basename(os.path.normpath(mod[1]))
-      alias = mod[0] or module
-      self.alias_to_module[alias] = module
-      self.included_shared_modules.append(module)
+    for mod in shared_packages:
+      package = os.path.basename(os.path.normpath(mod[1]))
+      alias = mod[0] or package
+      self.alias_to_package[alias] = package
+      self.included_shared_packages.append(package)
 
-    for mod in local_modules:
-      module = os.path.basename(os.path.normpath(mod[1]))
-      alias = mod[0] or module
-      self.alias_to_module[alias] = module
-      self.included_local_modules.append(module)
+    for mod in local_packages:
+      # we prefar the last match but if there is no '/' in the path match[1] will be our folder/package
+      package = mod[2] or mod[1]
+      package = os.path.basename(os.path.normpath(package))
+      alias = mod[0] or package
+      self.alias_to_package[alias] = package
+      self.included_local_packages.append(package)
 
   def on_activated_async(self, view):
     pass
@@ -306,12 +302,12 @@ class OdinCompletions(sublime_plugin.EventListener):
       return None
 
     # cleanup before we start
-    self.alias_to_module.clear()
-    self.included_core_modules.clear()
-    self.included_shared_modules.clear()
-    self.included_local_modules.clear()
+    self.alias_to_package.clear()
+    self.included_core_packages.clear()
+    self.included_shared_packages.clear()
+    self.included_local_packages.clear()
     self.before_dot = None
-    self.search_module = None
+    self.search_package = None
 
     if not self.view_is_odin(view):
       return None
@@ -329,18 +325,9 @@ class OdinCompletions(sublime_plugin.EventListener):
     curr_line_region = file_view.line(locations[0])
     curr_line = file_view.substr(curr_line_region).strip()
 
-    # if we are in a comment line bail out with no completions
-    loc = locations[0]
-    if curr_line.find('//') >= 0:
-      while loc > curr_line_region.begin():
-        block = file_view.substr(sublime.Region(loc - 2, loc))
-        if block == '//':
-          return []
-        loc -= 1
-
-    # this needs to check if the '.' is not just in the line but connected to the text we are typing
+    # extract the string before the '.' in the current line if there is one and we are on the right side of it typing
     if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
-      pre_cursor_range = file_view.substr(sublime.Region(curr_line_region.begin(), loc))
+      pre_cursor_range = file_view.substr(sublime.Region(curr_line_region.begin(), locations[0]))
       space_index = pre_cursor_range.rfind(' ') + 1
       tab_index = pre_cursor_range.rfind('\t') + 1
       start_index = max(space_index, tab_index)
@@ -353,21 +340,34 @@ class OdinCompletions(sublime_plugin.EventListener):
     paths = self.get_all_odin_file_paths()
     completions = []
 
-    # if we have no . in the text on the current line add the included module names and builtins as completions
+    # if we have no . in the text on the current line add the included package names and builtins as completions
     # TODO: add local variables
     if self.before_dot == None:
-      for mod in self.included_local_modules:
-        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
-      for mod in self.included_core_modules:
-        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
-      for mod in self.included_shared_modules:
-        completions.append(['Module: ' + mod, self.alias_for_module(mod)])
+      for mod in self.included_local_packages:
+        alias = self.alias_for_package(mod)
+        completions.append(['Package: ' + mod, alias])
+        if alias != mod:
+          completions.append(['Package: {} (alias for {})'.format(alias, mod), alias])
+      for mod in self.included_core_packages:
+        alias = self.alias_for_package(mod)
+        completions.append(['Package: ' + mod, alias])
+        if alias != mod:
+          completions.append(['Package: {} (alias for {})'.format(alias, mod), alias])
+      for mod in self.included_shared_packages:
+        alias = self.alias_for_package(mod)
+        completions.append(['Package: ' + mod, alias])
+        if alias != mod:
+          completions.append(['Package: {} (alias for {})'.format(alias, mod), alias])
       completions.extend(self.built_in_procs)
 
+    # invalidate the cache for our current package
+    # TODO: actually cache the completions by package name
+    parser.invalidate_completions(self.current_package)
+
     for path in reversed(list(paths)):
-      module_or_filename = self.search_module or os.path.split(path)[1]
-      completions += parser.get_completions_from_file(module_or_filename, self.get_file_contents(path))
-      # remove old completions
+      package_or_filename = self.search_package or os.path.split(path)[1]
+      completions += parser.get_completions_from_file(package_or_filename, self.get_file_contents(path))
+      # TODO: remove old completions
       # completions += self.get_completions_from_file_path(path)
 
     # Report time spent building completions before returning

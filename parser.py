@@ -1,8 +1,7 @@
 import re
 
 
-proc_pattern = re.compile(r'\b(\b[[:alpha:]_]+[[:alnum:]_]*\b)\s*[:]\s*[:]\s*proc')
-proc_pattern2 = re.compile(r'\b(\b[[:alpha:]_]+[[:alnum:]_]*\b)\s*[:]\s*[:]\s*(inline|no_inline)\s+proc')
+cache = CompletionCache()
 
 # caps: 1 -> name, 2 -> params, 3 -> return types
 proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:->\s*(.*?))?(?:{|-|;)')
@@ -12,8 +11,12 @@ type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|e
 param_delim_pattern = re.compile(r',(?![^(]*\))')
 
 
-def get_completions_from_file(module_or_filename, text):
-	completions = get_type_completions(module_or_filename, text)
+def invalidate_completions(package):
+	cache.invalidate_completions(package)
+
+
+def get_completions_from_file(package_or_filename, text):
+	completions = get_type_completions(package_or_filename, text)
 	matches = proc_return_pattern.findall(text)
 	for m in matches:
 		name = m[0]
@@ -37,16 +40,16 @@ def get_completions_from_file(module_or_filename, text):
 		elif len(param_str):
 			params.append(param_str)
 
-		completions.append(make_completion_from_proc_components(name, params, retval, module_or_filename))
+		completions.append(make_completion_from_proc_components(name, params, retval, package_or_filename))
 
 	return completions
 
 
-def get_type_completions(module_or_filename, text):
+def get_type_completions(package_or_filename, text):
 	completions = []
 	matches = type_pattern.findall(text)
 	for m in matches:
-		completions.append(['{}\t{} {}'.format(m[0], m[1], module_or_filename), m[0]])
+		completions.append(['{}\t{} {}'.format(m[0], m[1], package_or_filename), m[0]])
 
 	return completions
 
@@ -76,3 +79,20 @@ def make_completion_from_proc_components(proc_name, params, return_type, file_na
 	completion = [trigger, result]
 
 	return completion
+
+
+
+
+
+class CompletionCache(object):
+	completions_by_package = dict()
+
+	def invalidate_completions(self, package):
+		self.completions_by_package.pop(package, None)
+
+	def has_completions(self, package):
+		return package in self.completions_by_package
+
+	def set_completions(self, package, completions):
+		self.completions_by_package[package] = completions
+
