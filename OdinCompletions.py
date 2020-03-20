@@ -105,24 +105,36 @@ class OdinCompletions(sublime_plugin.EventListener):
     else:
       return file_view.substr(sublime.Region(0, file_view.size()))
 
-  # return True (if the next char is empty or a newline) and all the previous chars are valid proc/var name chars up to the '.'
-  def is_dot_completion(self, file_view, loc):
-    # next char should be some type of space, ie we are not in a word typing
-    # next_char = file_view.substr(sublime.Region(loc, loc + 1))
-    # if next_char not in ['\n', '', ' ']:
-    #   return False
+  # return True if all the previous chars are valid (a-zA-Z0-9_) up to the '.'
+  def get_prefix_before_dot(self, file_view, loc):
+    # next char should be some type of space, paren or non-word
+    next_char = file_view.substr(sublime.Region(loc, loc + 1))
+    if next_char.isalnum():
+      return False
 
-    # walk backwards until we find a '.'. If we hit a non-proc/var char bail out since this isnt a completion
+    # walk backwards until we find a '.'. If we hit a non-char (a-zA-Z0-9_) bail out since this isnt a completion
     curr_line_region = file_view.line(loc)
+
+    def get_before_dot(dot_loc):
+      region_end = dot_loc
+      while dot_loc > curr_line_region.begin():
+        prev_char = file_view.substr(sublime.Region(dot_loc - 1, dot_loc))
+        if prev_char.isalnum() or prev_char == '_':
+          dot_loc -= 1
+        else:
+          return file_view.substr(sublime.Region(dot_loc, region_end))
+      return None
+
     while loc > curr_line_region.begin():
       char = file_view.substr(sublime.Region(loc - 1, loc))
       if char == '.':
-        return True
+        return get_before_dot(loc - 1)
 
       if char.isalnum() or char == '_':
         loc -= 1
       else:
-        return False
+        return None
+    return None
 
   def extract_includes(self):
     contents = sublime.active_window().active_view().substr(sublime.Region(0, sublime.active_window().active_view().size()))
@@ -177,15 +189,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     curr_line = file_view.substr(curr_line_region).strip()
 
     # extract the string before the '.' in the current line if there is one and we are on the right side of it typing
-    if '.' in curr_line and self.is_dot_completion(file_view, locations[0]):
-      pre_cursor_range = file_view.substr(sublime.Region(curr_line_region.begin(), locations[0]))
-      space_index = pre_cursor_range.rfind(' ') + 1
-      tab_index = pre_cursor_range.rfind('\t') + 1
-      start_index = max(space_index, tab_index)
-      dot_index = pre_cursor_range.rindex('.')
-      self.before_dot = pre_cursor_range[start_index:dot_index]
-    else:
-      self.before_dot = None
+    self.before_dot = self.get_prefix_before_dot(file_view, locations[0])
 
     self.extract_includes()
     paths = self.get_all_odin_file_paths()

@@ -1,5 +1,17 @@
 import re
 
+class CompletionCache(object):
+	completions_by_package = dict()
+
+	def invalidate_completions(self, package):
+		self.completions_by_package.pop(package, None)
+
+	def has_completions(self, package):
+		return package in self.completions_by_package
+
+	def set_completions(self, package, completions):
+		self.completions_by_package[package] = completions
+
 
 cache = CompletionCache()
 
@@ -79,20 +91,3 @@ def make_completion_from_proc_components(proc_name, params, return_type, file_na
 	completion = [trigger, result]
 
 	return completion
-
-
-
-
-
-class CompletionCache(object):
-	completions_by_package = dict()
-
-	def invalidate_completions(self, package):
-		self.completions_by_package.pop(package, None)
-
-	def has_completions(self, package):
-		return package in self.completions_by_package
-
-	def set_completions(self, package, completions):
-		self.completions_by_package[package] = completions
-
