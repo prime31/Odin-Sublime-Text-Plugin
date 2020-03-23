@@ -45,16 +45,20 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 
 		args = ['"' + bat_path + '"', vars['file_base_name']]
 
-		build_opt = '-opt=' + str(opt_level)
+		build_opt = '"-opt=' + str(opt_level) + ' -keep-temp-files"'
 		if d3d11:
 			build_opt += ' -define:D3D11=1'
 		args.append(build_opt)
 
 		# get all our dll paths
-		native_dirs = self.get_all_native_paths('.dll')
+		native_dirs = self.get_all_native_paths('.lib', True)
+		native_dirs.append('opengl32.lib')
+		args.append('"' + ' '.join(native_dirs) + '"')
+
+		print(native_dirs)
 
 		# shove all our dll paths in the PATH environment var
-		os.environ['PATH'] = os.environ['PATH'] + ';' + ';'.join(native_dirs)
+		#os.environ['PATH'] = os.environ['PATH'] + ';' + ';'.join(native_dirs)
 
 		self.window.active_view().window().run_command('exec', {
 			'shell': True,
@@ -66,13 +70,17 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 		})
 
 	# fetches all the paths that have dylibs/dlls in them in folders named 'native' in the 'odin/shared' folder
-	def get_all_native_paths(self, lib_ext='.dylib'):
+	def get_all_native_paths(self, lib_ext='.dylib', append_lib_name=False):
 		native_dirs = []
 		odin_shared_path = os.path.expanduser('~/odin/shared')
 		for root, dirs, files in os.walk(odin_shared_path):
 			dirs[:] = list(filter(lambda x: not x == '.git', dirs))
 			if root.endswith('native'):
-				if any(lib_ext in f for f in files):
-					native_dirs.append(root)
+				for f in files:
+					if f.endswith(lib_ext):
+						if append_lib_name:
+							native_dirs.append(os.path.join(root, f))
+						else:
+							native_dirs.append(root)
 		return native_dirs
 
