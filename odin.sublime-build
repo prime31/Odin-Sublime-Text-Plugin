@@ -7,6 +7,10 @@
             "name": "Metal",
             "metal": true
         },
+		{
+			"name": "D3D11",
+			"d3d11": true
+		},
         {
             "name": "Build With Opt Level 3",
             "opt_level": 3

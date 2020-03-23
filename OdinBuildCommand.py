@@ -5,9 +5,9 @@ import shutil
 import subprocess as subp
 
 class OdinBuildCommand(sublime_plugin.WindowCommand):
-	def run(self, metal=False, opt_level=0):
+	def run(self, metal=False, d3d11=False, opt_level=0):
 		if os.name == 'nt':
-			self.build_win(opt_level)
+			self.build_win(d3d11, opt_level)
 			return
 
 		vars = self.window.extract_variables()
@@ -38,12 +38,17 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 			'syntax': 'BuildOutput.sublime-syntax'
 		})
 	
-	def build_win(self, opt_level=0):
+	def build_win(self, d3d11=False, opt_level=0):
 		vars = self.window.extract_variables()
 		dir_path = os.path.dirname(os.path.realpath(__file__))
 		bat_path = os.path.join(dir_path, 'build_windows.bat')
 
 		args = ['"' + bat_path + '"', vars['file_base_name']]
+
+		build_opt = '-opt=' + str(opt_level)
+		if d3d11:
+			build_opt += ' -define:D3D11=1'
+		args.append(build_opt)
 
 		# get all our dll paths
 		native_dirs = self.get_all_native_paths('.dll')
