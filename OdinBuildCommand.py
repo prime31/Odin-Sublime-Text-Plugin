@@ -51,14 +51,27 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 		args.append(build_opt)
 
 		# get all our dll paths
-		native_dirs = self.get_all_native_paths('.lib', True)
-		native_dirs.append('opengl32.lib')
-		args.append('"' + ' '.join(native_dirs) + '"')
+		native_libs = self.get_all_native_paths('.lib', True)
+		native_libs = map(lambda path: path.replace('/', '\\'), native_libs)
 
-		print(native_dirs)
+		filter_lib = 'sokol_gl' if d3d11 else 'sokol_d3d11'
+		native_libs = list(filter(lambda path: filter_lib not in path, native_libs))
 
-		# shove all our dll paths in the PATH environment var
-		#os.environ['PATH'] = os.environ['PATH'] + ';' + ';'.join(native_dirs)
+		if not d3d11:
+			native_libs.append('opengl32.lib')
+		native_libs.append('MSVCRTD.lib')
+		args.append('"' + ' '.join(native_libs) + '"')
+
+		# shove all our dll paths in the PATH environment var, being careful not to dupe them
+		native_dlls = list(map(lambda path: path.replace('/', '\\'), self.get_all_native_paths('.dll', False)))
+		env_path = os.environ['PATH']
+		native_dlls = [path for path in native_dlls if path not in env_path]
+
+		# print('native_libs', native_libs)
+		# print('native_dlls', native_dlls)
+
+		if len(native_dlls) > 0:
+			os.environ['PATH'] = os.environ['PATH'] + ';' + ';'.join(native_dlls)
 
 		self.window.active_view().window().run_command('exec', {
 			'shell': True,
