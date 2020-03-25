@@ -9,7 +9,7 @@ odin build %1.odin %~2
 echo --------------- linking -----------------
 
 rem echo link -nologo %1.obj %~3
-link -nologo %1.obj %~3
+link -nologo %1.obj /NODEFAULTLIB:LIBCMT %~3
 @del *.bc
 @del *.ll
 @del *.exp
