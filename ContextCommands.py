@@ -6,7 +6,7 @@ import threading
 import re
 
 
-def toAdaCase(txt):
+def to_ada_case(txt):
 	new_txt = ''
 
 	orig_txt = txt
@@ -96,7 +96,7 @@ class VToOdinStructCommand(sublime_plugin.TextCommand):
 			txt = self.view.substr(region)
 			if any(piece in txt for piece in ['struct']):
 				x = re.findall(r'.*?struct\s(\w+)\s', txt)
-				new_txt += toAdaCase(x[0]) + ' :: struct {\n'
+				new_txt += to_ada_case(x[0]) + ' :: struct {\n'
 			elif txt.find(':') > 0:
 				regions_to_kill.append(region)
 			elif txt.find('}') >= 0:
