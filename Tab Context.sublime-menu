@@ -1,4 +1,5 @@
 [
 	{ "caption": "-" },
 	{ "command": "clone_right", "caption": "Clone tab in new right pane" },
+	{ "command": "carry_file_to_pane", "args": {"direction": "right"}, "caption": "Move tab to new right pane" },
 ]
