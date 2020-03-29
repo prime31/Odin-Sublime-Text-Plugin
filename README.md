@@ -1,10 +1,10 @@
 # Odin-Sublime-Text-Plugin
 
-Syntax highlighting, autocompletion, and Goto Symbol/Anything/Definition for the Odin language in Sublime Text 3. This is a pretty hacked together mess but it may provide a modicum of assistance for helping to learn Odin. The build command will only work if the `odin` executable is globally available. Note that Windows users will probably have to change the build command to call `odin.exe`.
+Syntax highlighting, autocompletion, and Goto Symbol/Anything/Definition for the Odin language in Sublime Text 3. This is a pretty hacked together mess but it may provide a modicum of assistance for helping to learn Odin. The build command will only work if the `odin` executable is globally available in your PATH.
 
 
 ## Installation
-Download or clone this repo into your Sublime Text 3 Packages folder (found via Preferences -> Browse Packages).
+Download or clone this repo into your Sublime Text 3 Packages folder (found via Preferences -> Browse Packages). It must be cloned into a folder named "Odin": 'git clone https://github.com/prime31/Odin-Sublime-Text-Plugin.git Odin'
 
 
 
