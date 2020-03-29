@@ -1,6 +1,6 @@
 # Odin-Sublime-Text-Plugin
 
-Syntax highlighting, autocompletion, and Goto Symbol/Anything/Definition for the Odin language in Sublime Text 3. This is a pretty hacked together mess but it may provide a modicum of assistance for helping to learn Odin. The build command will only work if the `odin` executable is globally available in your PATH.
+Syntax highlighting, autocompletion, and Goto Symbol/Anything/Definition for the Odin language in Sublime Text 3. This is a pretty hacked together mess but it may provide a modicum of assistance for helping to learn Odin. The build command will only work if the `odin` executable is globally available in your PATH. Also note that autocomplete will look for Odin's core and shared folders only in ~/Odin for now.
 
 
 ## Installation
