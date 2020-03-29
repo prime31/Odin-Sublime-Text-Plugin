@@ -4,7 +4,7 @@ Syntax highlighting, autocompletion, and Goto Symbol/Anything/Definition for the
 
 
 ## Installation
-Download or clone this repo into your Sublime Text 3 Packages folder (found via Preferences -> Browse Packages). It must be cloned into a folder named "Odin": 'git clone https://github.com/prime31/Odin-Sublime-Text-Plugin.git Odin'
+Download or clone this repo into your Sublime Text 3 Packages folder (found via Preferences -> Browse Packages). It must be cloned into a folder named "Odin": `git clone https://github.com/prime31/Odin-Sublime-Text-Plugin.git Odin`
 
 
 
