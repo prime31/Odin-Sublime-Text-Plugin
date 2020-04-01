@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 import re
 import os
+import platform
 import glob
 import fnmatch
 import time
@@ -91,6 +92,7 @@ class OdinCompletions(sublime_plugin.EventListener):
             # special care for os
             if root_dir == 'os':
               paths.add(os.path.join(root, 'os.odin'))
+              paths.add(os.path.join(root, 'os_' + platform.system().lower() + '.odin'))
             else:
               for file in fnmatch.filter(files, '*.odin'):
                 paths.add(os.path.join(root, file))
