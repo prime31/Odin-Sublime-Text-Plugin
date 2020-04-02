@@ -3,6 +3,7 @@ import sublime_plugin
 import os
 import re
 import shutil
+import platform
 import threading
 import subprocess
 
@@ -46,6 +47,9 @@ class OpenInFinderCommand(sublime_plugin.WindowCommand):
 			"shell": False
 		})
 
+	def is_enabled(self):
+		return platform.system() == 'Darwin'
+
 
 class OpenInTerminalCommand(sublime_plugin.WindowCommand):
 	def run(self, paths):
@@ -59,6 +63,9 @@ class OpenInTerminalCommand(sublime_plugin.WindowCommand):
 			"cmd": ["open", "-a", "Terminal", path],
 			"shell": False
 		})
+
+	def is_enabled(self):
+		return platform.system() == 'Darwin'
 
 
 class BuildShadersCommand(sublime_plugin.WindowCommand):
@@ -109,6 +116,9 @@ class BuildShadersCommand(sublime_plugin.WindowCommand):
 	def run(self, paths):
 		self.do_build(self.window, paths[0])
 
+	def is_visible(self, paths):
+		return platform.system() == 'Darwin'
+
 	def is_enabled(self, paths):
 		return len(paths) == 1 and os.path.isdir(paths[0])
 
@@ -116,6 +126,9 @@ class BuildShadersCommand(sublime_plugin.WindowCommand):
 class BuildShaderCommand(BuildShadersCommand):
 	def run(self, paths):
 		self.do_build(self.window, paths[0])
+
+	def is_visible(self, paths):
+		return platform.system() == 'Darwin'
 
 	def is_enabled(self, paths):
 		return len(paths) == 1 and os.path.isfile(paths[0])
