@@ -11,6 +11,18 @@
  		"command": "open_in_terminal",
 		"args": {"paths": []}
  	},
+    {
+ 		"caption": "Build All Shaders in Folder…",
+		"id": "odin-build-shaders",
+ 		"command": "build_shaders",
+		"args": {"paths": []}
+ 	},
+	{
+ 		"caption": "Build Selected Shader…",
+		"id": "odin-build-shader",
+ 		"command": "build_shader",
+		"args": {"paths": []}
+ 	},
 	{
 		"caption": "Duplicate…",
 		"id": "odin-duplicate",

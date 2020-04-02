@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 
+# handles hiding/showing the minimap and sidebar when multiple columns are opened
 class CloseMinimapOnMultiView(sublime_plugin.EventListener):
     was_minimap_open = True
     was_sidebar_visible = True
