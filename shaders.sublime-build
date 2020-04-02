@@ -1,0 +1,4 @@
+{
+	"target": "shader_build",
+	"file_patterns": ["*.fx"],
+}

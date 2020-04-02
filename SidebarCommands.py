@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 import os
+import re
 import shutil
 import threading
 import subprocess
@@ -61,54 +62,60 @@ class OpenInTerminalCommand(sublime_plugin.WindowCommand):
 
 
 class BuildShadersCommand(sublime_plugin.WindowCommand):
-	def run(self, paths):
-		path = CommandHelper.get_path(self, paths)
-		for root, dirs, files in os.walk(paths[0]):
-			files[:] = list(filter(lambda f: f.endswith('.fx'), files))
-			if len(files) > 0:
-				self.build_shaders(root, files)
+	@staticmethod
+	def do_build(window, file_or_folder):
+		file_param = '"*.fx"' if os.path.isdir(file_or_folder) else os.path.basename(file_or_folder)
+		root = file_or_folder if os.path.isdir(file_or_folder) else os.path.dirname(file_or_folder)
+		print(file_param, root)
 
-	def build_shaders(self, root, files):
 		results = ['<body style="border: 4px solid white; padding: 10px;"><h2>Shader Build Report</h2>']
 
 		try:
-			output = subprocess.check_output(['"' + os.path.dirname(os.path.realpath(__file__)) + '/buildEffects.sh" ' + '"' + root + '"'], shell=True, stderr=subprocess.STDOUT, cwd=root)
+			script_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'buildEffect.sh')
+			output = subprocess.check_output(['"' + script_path + '" ' + '"' + root + '" ' + file_param], shell=True, stderr=subprocess.STDOUT, cwd=root)
+
+			# print the raw output to the console
 			print(output)
 			output = output.decode('utf-8').split('\r\n')
 			output = list(filter(lambda l: not any(ele in l for ele in ['Microsoft']), output))
+			output = [l for l in output if len(l) > 2] # kill all empty and \n lines
+
+			# format the output
+			match_path_pattern = re.compile(r'.*?([a-zA-Z]:\\.*?(\w*\.fx))')
+			for i, s in enumerate(output):
+				# strip long path names
+				matches = match_path_pattern.findall(s)
+				for m in matches:
+					output[i] = output[i].replace(m[0], m[1])
+
+				output[i] = output[i].replace('compilation failed;', '<b style="color: red">compilation failed:</b>')
+				output[i] = output[i].replace('compilation succeeded; see', '<b style="color: green">compilation succeeded:</b>')
+
+				if 'no code produced' in s:
+					output[i] += '<br>'
+
+				if 'error' in s:
+					output[i] = '<b style="color: red;">' + output[i] + '</b>'
+
+			print(output)
 			out = '<br>'.join(output)
 			results.append(out.replace('\n', '<br>'))
 			results.append('</body>')
 		except subprocess.CalledProcessError as e:
-			raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+			raise RuntimeError("command '{}' returned with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-		self.window.active_view().show_popup('<br>'.join(results), max_width=1024, max_height=768)
+		window.active_view().show_popup('<br>'.join(results), max_width=1024, max_height=768)
 
+	def run(self, paths):
+		self.do_build(self.window, paths[0])
 
 	def is_enabled(self, paths):
 		return len(paths) == 1 and os.path.isdir(paths[0])
 
 
-class BuildShaderCommand(sublime_plugin.WindowCommand):
+class BuildShaderCommand(BuildShadersCommand):
 	def run(self, paths):
-		path = CommandHelper.get_path(self, paths)
-		file = os.path.basename(path)
-		root = os.path.dirname(path)
-		results = ['<body style="border: 4px solid white; padding: 10px;"><h2>Shader Build Report</h2>']
-
-		try:
-			output = subprocess.check_output(['"' + os.path.dirname(os.path.realpath(__file__)) + '/buildEffect.sh" ' + '"' + root + '" ' + file], shell=True, stderr=subprocess.STDOUT, cwd=root)
-			print(output)
-			output = output.decode('utf-8').split('\r\n')
-			output = list(filter(lambda l: not any(ele in l for ele in ['Microsoft']), output))
-			out = '<br>'.join(output)
-			results.append(out.replace('\n', '<br>'))
-			results.append('</body>')
-		except subprocess.CalledProcessError as e:
-			raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-
-		self.window.active_view().show_popup('<br>'.join(results), max_width=1024, max_height=768)
-
+		self.do_build(self.window, paths[0])
 
 	def is_enabled(self, paths):
 		return len(paths) == 1 and os.path.isfile(paths[0])

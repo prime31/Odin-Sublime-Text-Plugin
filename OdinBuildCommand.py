@@ -37,7 +37,7 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 			'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
 			'syntax': 'BuildOutput.sublime-syntax'
 		})
-	
+
 	def build_win(self, d3d11=False, opt_level=0):
 		vars = self.window.extract_variables()
 		dir_path = os.path.dirname(os.path.realpath(__file__))

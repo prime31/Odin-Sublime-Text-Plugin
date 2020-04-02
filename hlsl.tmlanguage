@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>hlsl</string>
+		<string>fx</string>
+	</array>
+	<key>name</key>
+	<string>HLSL</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>match</key>
+			<string>\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b</string>
+			<key>name</key>
+			<string>constant.numeric.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>General flow control keywords</string>
+			<key>match</key>
+			<string>\b(break|case|continue|default|discard|do|else|for|goto|if|return|switch|while)\b</string>
+			<key>name</key>
+			<string>keyword.control.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Flow control attributes</string>
+			<key>match</key>
+			<string>\b(flatten|branch|forecase|call|unroll|loop|fastopt|allow_uav_condition)\b</string>
+			<key>name</key>
+			<string>keyword.control.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Generic data types</string>
+			<key>match</key>
+			<string>\b(Buffer|class|struct|string|typedef|void)\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Scalar, vector and matrix data types</string>
+			<key>match</key>
+			<string>\b(vector|matrix|(bool|double|float|half|int|uint)([1-4](x[1-4])?)?|(min16(float|int|uint))|min10float|min12int)\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Sampler types</string>
+			<key>match</key>
+			<string>\b(sampler(1D|2D|3D|CUBE|_state)?|SamplerState)\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Shader types</string>
+			<key>match</key>
+			<string>\b(pass|technique|technique10|compile|SetVertexShader|SetGeometryShader|SetPixelShader|CompileShader|ShaderFunction|SetDepthStencilState|SetRasterizerState|SetBlendState)\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Texture types</string>
+			<key>match</key>
+			<string>\b(texture|Texture((1D|2D)(Array)?|3D|Cube))\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Legacy types</string>
+			<key>match</key>
+			<string>\b(DWORD|FLOAT|VECTOR|MATRIX|STRING|TEXTURE|PIXELSHADER|VERTEXSHADER)\b</string>
+			<key>name</key>
+			<string>storage.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Storage, type, function argument and struct interpolation modifiers</string>
+			<key>match</key>
+			<string>\b(inline|(extern|precise|shared|groupshared|packoffset|register|snorm|static|uniform|unorm|volatile)|(const|row_major|column_major)|(in|inout|out)|(centroid|linear|nointerpolation|noperspective|sample))\b</string>
+			<key>name</key>
+			<string>storage.modifier.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Intrinsic functions</string>
+			<key>match</key>
+			<string>\b(      abort|abs|acos|all|AllMemoryBarrier|AllMemoryBarrierWithGroupSync|any|asdouble|asfloat|asin|asint|asuint|atan|atan2|ceil|clamp|clip|cos|cosh|countbits|cross|D3DCOLORtoUBYTE4|ddx|ddx_coarse|ddx_fine|ddy|ddy_coarse|ddy_fine|degrees|determinant|DeviceMemoryBarrier|DeviceMemoryBarrierWithGroupSync|distance|dot|dst|errorf|EvaluateAttributeAtCentroid|EvaluateAttributeAtSample|EvaluateAttributeSnapped|exp|exp2|f16tof32|f32tof16|faceforward|firstbithigh|firstbitlow|floor|fma|fmod|frac|frexp|fwidth|GetRenderTargetSampleCount|GetRenderTargetSamplePosition|GroupMemoryBarrier|GroupMemoryBarrierWithGroupSync|InterlockedAdd|InterlockedAnd|InterlockedCompareExchange|InterlockedCompareStore|InterlockedExchange|InterlockedMax|InterlockedMin|InterlockedOr|InterlockedXor|isfinite|isinf|isnan|ldexp|length|lerp|lit|log|log10|log2|mad|max|min|modf|msad4|mul|noise|normalize|pow|printf|Process2DQuadTessFactorsAvg|Process2DQuadTessFactorsMax|Process2DQuadTessFactorsMin|ProcessIsolineTessFactors|ProcessQuadTessFactorsAvg|ProcessQuadTessFactorsMax|ProcessQuadTessFactorsMin|ProcessTriTessFactorsAvg|ProcessTriTessFactorsMax|ProcessTriTessFactorsMin|radians|rcp|reflect|refract|reversebits|round|rsqrt|saturate|sign|sin|sincos|sinh|smoothstep|sqrt|step|tan|tanh|tex1D|tex1Dbias|tex1Dgrad|tex1Dlod|tex1Dproj|tex2D|tex2Dbias|tex2Dgrad|tex2Dlod|tex2Dproj|tex3D|tex3Dbias|tex3Dgrad|tex3Dlod|tex3Dproj|texCUBE|texCUBEbias|texCUBEgrad|texCUBElod|texCUBEproj|transpose|trunc)\b</string>
+			<key>name</key>
+			<string>support.function.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Semantics</string>
+			<key>match</key>
+			<string>\b(BINORMAL[0-9]*|BLENDINDICES[0-9]*|BLENDWEIGHT[0-9]*|COLOR[0-9]*|NORMAL[0-9]*|POSITION[0-9]*|POSITIONT|PSIZE[0-9]*|TANGENT[0-9]*|TEXCOORD[0-9]*|Output|FOG|PSIZE|TESSFACTOR[0-9]*|VFACE|VPOS|DEPTH[0-9]*)\b</string>
+			<key>name</key>
+			<string>entity.name.tag.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>State variables</string>
+			<key>match</key>
+			<string>\b(?i:(AB_BLENDFACTOR|AB_SAMPLEMASK|AddressU|AddressV|AddressW|AlphaBlendEnable|AlphaFunc|AlphaRef|AlphaTestEnable|AlphaToCoverageEnable|Ambient|AmbientMaterialSource|AntialiasedLineEnable|BackStencilFail|BackStencilFunc|BackStencilPass|BackStencilZFail|BlendEnable|BlendOp|BlendOpAlpha|BlendState|BorderColor|Clipping|ClipPlaneEnable|ColorVertex|ColorWriteEnable|ComparisonFunc|CullMode|DepthBias|DepthBiasClamp|DepthEnable|DepthFunc|DepthStencilState|DepthWriteMask|DestBlend|DestBlendAlpha|DiffuseMaterialSource|DitherEnable|DS_STENCILREF|EmissiveMaterialSource|FillMode|Filter|FogColor|FogDensity|FogEnable|FogEnd|FogStart|FogTableMode|FogVertexMode|FrontCounterClockwise|FrontStencilFail|FrontStencilFunc|FrontStencilPass|FrontStencilZFail|GeometryShader|IndexedVertexBlendEnable|LastPixel|LightAmbient|LightAttenuation[0-2]|LightDiffuse|LightDirection|LightEnable|LightFalloff|Lighting|LightPhi|LightPosition|LightRange|LightSpecular|LightTheta|LightType|LocalViewer|MagFilter|MaterialAmbient|MaterialDiffuse|MaterialEmissive|MaterialPower|MaterialSpecular|MaxAnisotropy|MaxLOD|MaxMipLevel|MinFilter|MinLOD|MipFilter|MipLODBias|MipMapLodBias|MultiSampleAntialias|MultisampleEnable|MultiSampleMask|NormalizeNormals|PatchSegments|PixelShader|PointScale|PointScaleEnable|PointSize|PointSpriteEnable|RangeFogEnable|RasterizerState|RenderTargetWriteMask|ScissorEnable|ShadeMode|SlopeScaledDepthBias|SlopeScaleDepthBias|SpecularEnable|SpecularMaterialSource|SrcBlend|SrcBlendAlpha|SRGBTexture|StencilEnable|StencilFail|StencilFunc|StencilMask|StencilPass|StencilReadMask|StencilRef|StencilWriteMask|StencilZFail|TextureFactor|TweenFactor|VertexBlend|VertexShader|Wrap([0-9]|1[0-5])|ZClipEnable))\b</string>
+			<key>name</key>
+			<string>support.constant.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Language constants</string>
+			<key>match</key>
+			<string>\b(?i:([0-3]WEIGHTS||ADD|ALWAYS|ANISOTROPIC|BLENDFACTOR|BORDER|BOTHINVSRCALPHA|BOTHSRCALPHA|CCW|CLAMP|COLOR1|COLOR2|CONVOLUTIONMONO|CW|DECR|DECRSAT|DESTALPHA|DESTCOLOR|DIRECTIONAL|DISABLE|EQUAL|EXP|EXP2|FALSE|FLAT|GAUSSIANQUAD|GOURAUD|GREATER|GREATEREQUAL|INCR|INCRSAT|INVBLENDFACTOR|INVDESTALPHA|INVDESTCOLOR|INVERT|INVSRCALPHA|INVSRCCOLOR|INVSRCCOLOR2|KEEP|LESS|LESSEQUAL|LINEAR|MATERIAL|MAX|MIN|MIRROR|MIRRORONCE|NEVER|NONE|NOTEQUAL|NULL|ONE|PHONG|POINT|PYRAMIDALQUAD|REPLACE|REVSUBTRACT|SOLID|SPOT|SRCALPHA|SRCALPHASAT|SRCCOLOR|SRCCOLOR2|SUBTRACT|TRUE|TWEENING|TWOSIDED|USEW|WIREFRAME|WRAP|ZERO))\b</string>
+			<key>name</key>
+			<string>constant.language.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Shader models</string>
+			<key>match</key>
+			<string>\b(ps_1_[1-4]|vs_1_1|(ps|vs)_2_([0ab]|sw)|x?[pv]s_3_0|[gpv]s_4_[01]|[cpgv]s_(4_0|4_1|5_0)|ds_5_0)\b</string>
+			<key>name</key>
+			<string>support.type.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Keywords imported by C that do not exist in HLSL</string>
+			<key>match</key>
+			<string>\b(_Bool|_Complex|_Imaginary|restrict)\b</string>
+			<key>name</key>
+			<string>source.hlsl</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>Reserved but unused keywords</string>
+			<key>match</key>
+			<string>\b(auto|case|catch|char|class|const_cast|default|delete|dynamic_cast|enum|explicit|friend|goto|long|mutable|new|operator|private|protected|public|reinterpret_cast|short|signed|sizeof|static_cast|template|this|throw|try|typename|union|unsigned|using|virtual)\b</string>
+			<key>name</key>
+			<string>invalid.illegal.hlsl</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>source.c</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.hlsl</string>
+	<key>uuid</key>
+	<string>f42f5931-4574-438e-a6f8-b406cade4616</string>
+</dict>
+</plist>
