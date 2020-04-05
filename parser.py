@@ -15,9 +15,11 @@ class CompletionCache(object):
 
 cache = CompletionCache()
 
-# caps: 1 -> name, 2 -> params, 3 -> return types
-proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:->\s*(.*?))?(?:{|-|;)')
-# caps: 1 -> name, 2 -> type/keyword
+# captures: 1 -> name, 2 -> params, 3 -> return types
+proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:(?:->|where.*?)\s*(.*?))?(?:{|-|;)')
+# captures: 1 -> name, 2 -> overloaded procs
+proc_overload_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*::\s*proc\s*{(.*?)};')
+# captures: 1 -> name, 2 -> type/keyword
 type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|enum|bit_field|bit_set)')
 # finds all the commas that are not surrounded by parens (used to filter out a proc with muliple params as a param to a proc)
 param_delim_pattern = re.compile(r',(?![^(]*\))')
@@ -53,6 +55,12 @@ def get_completions_from_file(package_or_filename, text):
 			params.append(param_str)
 
 		completions.append(make_completion_from_proc_components(name, params, retval, package_or_filename))
+
+	matches = proc_overload_pattern.findall(text)
+	for m in matches:
+		name = m[0]
+		overloads = m[1]
+		completions.append([name + '\t' + package_or_filename, name + '(${0:overloads: ' + overloads + '})'])
 
 	return completions
 
