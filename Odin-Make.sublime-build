@@ -1,0 +1,11 @@
+{
+	"name": "Odin Make",
+	"cmd": ["make"],
+	"file_patterns": ["Makefile"],
+	"variants": [
+        {
+            "name": "Clean",
+            "cmd": ["make", "clean"]
+        }
+    ]
+}
