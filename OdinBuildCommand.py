@@ -5,7 +5,7 @@ import shutil
 import subprocess as subp
 
 class OdinBuildCommand(sublime_plugin.WindowCommand):
-	def run(self, metal=False, d3d11=False, opt_level=0):
+	def run(self, metal=False, d3d11=False, opt_level=0, print_args=False):
 		if os.name == 'nt':
 			self.build_win(d3d11, opt_level)
 			return
@@ -24,6 +24,9 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 
 		exe_exists = '[ -f ' + os.path.join(vars['file_path'], vars['file_base_name']) + ' ]'
 		args.extend(['&&', 'export', 'DYLD_LIBRARY_PATH=' + lib_path + ';', exe_exists, '&&', './' + vars['file_base_name']])
+
+		if print_args:
+			print(args)
 
 		# kill the old exe so that we fail to run anything if we dont build
 		if os.path.exists(vars['file_base_name']):

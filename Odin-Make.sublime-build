@@ -1,5 +1,4 @@
 {
-	"name": "Odin Make",
 	"cmd": ["make"],
 	"file_patterns": ["Makefile"],
 	"variants": [
