@@ -35,4 +35,10 @@
 		"command": "move",
 		"args": {"paths": []}
 	},
+	{
+		"caption": "Open with qapitrace…",
+		"id": "odin-qapitrace",
+		"command": "open_qapitrace",
+		"args": {"paths": []}
+	},
  ]

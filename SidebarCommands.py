@@ -67,6 +67,21 @@ class OpenInTerminalCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return platform.system() == 'Darwin'
 
+class OpenQapitraceCommand(sublime_plugin.WindowCommand):
+	def run(self, paths):
+		path = CommandHelper.get_path(self, paths)
+
+		self.window.run_command("exec", {
+			"cmd": ["qapitrace", path],
+			"shell": False
+		})
+
+	def is_visible(self, paths):
+		return platform.system() == 'Darwin'
+
+	def is_enabled(self, paths):
+		return len(paths) == 1 and os.path.isfile(paths[0])
+
 
 class BuildShadersCommand(sublime_plugin.WindowCommand):
 	@staticmethod

@@ -18,6 +18,10 @@
 		{
 			"name": "Print args",
 			"print_args": true
+		},
+		{
+			"name": "apitrace",
+			"apitrace": true
 		}
     ]
 }

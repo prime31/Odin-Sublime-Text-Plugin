@@ -5,7 +5,7 @@ import shutil
 import subprocess as subp
 
 class OdinBuildCommand(sublime_plugin.WindowCommand):
-	def run(self, metal=False, d3d11=False, opt_level=0, print_args=False):
+	def run(self, metal=False, d3d11=False, opt_level=0, print_args=False, apitrace=False):
 		if os.name == 'nt':
 			self.build_win(d3d11, opt_level)
 			return
@@ -27,6 +27,19 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 
 		if print_args:
 			print(args)
+
+		if apitrace:
+			args.pop()
+			args.append('apitrace trace --api gl ./' + vars['file_base_name'])
+			self.window.active_view().window().run_command('exec', {
+				'shell': True,
+				'shell_cmd': ' '.join(args),
+				'quiet': True,
+				'working_dir' : vars['file_path'],
+				'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
+				'syntax': 'BuildOutput.sublime-syntax'
+			})
+			return
 
 		# kill the old exe so that we fail to run anything if we dont build
 		if os.path.exists(vars['file_base_name']):
