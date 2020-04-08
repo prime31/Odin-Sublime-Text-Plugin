@@ -7,6 +7,10 @@
                 "command": "ada_case_selection"
             },
             {
+                "caption": "To Snake Case Selection",
+                "command": "snake_case_selection"
+            },
+            {
                 "caption": "To Upper Selection",
                 "command": "to_upper_selection"
             },
