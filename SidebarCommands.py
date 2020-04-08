@@ -119,6 +119,9 @@ class BuildShadersCommand(sublime_plugin.WindowCommand):
 				if 'error' in s:
 					output[i] = '<b style="color: red;">' + output[i] + '</b>'
 
+				if 'warning' in s:
+					output[i] = '<b style="color: yellow;">' + output[i] + '</b>'
+
 			print(output)
 			out = '<br>'.join(output)
 			results.append(out.replace('\n', '<br>'))
