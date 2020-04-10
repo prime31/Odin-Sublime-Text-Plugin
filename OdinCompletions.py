@@ -10,6 +10,8 @@ from Odin import parser
 
 
 class OdinCompletions(sublime_plugin.EventListener):
+  full_reindex_interval_secs = 60 * 10 # Ten minutes
+  last_full_reindex_secs = -full_reindex_interval_secs
   alias_to_package = dict()
 
   package_pattern = re.compile(r'package\s+(.*)')
@@ -37,7 +39,10 @@ class OdinCompletions(sublime_plugin.EventListener):
         return k
     return package
 
-  def get_all_odin_file_paths(self):
+  def add_import(self, view, package):
+    sublime.active_window().run_command('insert_import', {'package': package})
+
+  def get_all_odin_file_paths(self, view):
     paths = set()
     window = sublime.active_window()
 
@@ -48,6 +53,11 @@ class OdinCompletions(sublime_plugin.EventListener):
     is_shared_package_completion = word_before_dot in self.included_shared_packages
     is_local_package_completion = word_before_dot in self.included_local_packages
     is_var_field_access = word_before_dot != None and not is_core_package_completion and not is_local_package_completion and not is_shared_package_completion
+
+    # if we have a word before the dot and is_var_field_access = True this could potentially be a package
+    # name that we can add an auto-import for
+    if word_before_dot != None and is_var_field_access and word_before_dot in parser.package_to_path:
+      view.show_popup_menu(['Add import   ' + parser.package_to_path[word_before_dot]], lambda index: self.add_import(view, parser.package_to_path[word_before_dot]) if index >= 0 else None)
 
     if word_before_dot == None and not is_var_field_access:
       paths.add(os.path.expanduser('~/odin/core/builtin/builtin.odin'))
@@ -165,6 +175,11 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.alias_to_package[alias] = package
       self.included_local_packages.append(package)
 
+  def on_post_save_async(self, view):
+    if time.time() - self.last_full_reindex_secs > self.full_reindex_interval_secs:
+      parser.reindex_all_package_names(os.path.dirname(sublime.active_window().active_view().file_name()))
+      self.last_full_reindex_secs = time.time()
+
   def on_query_completions(self, view, prefix, locations):
     if len(locations) > 1 or not view.file_name().endswith('.odin'):
       return None
@@ -194,7 +209,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     self.before_dot = self.get_prefix_before_dot(file_view, locations[0])
 
     self.extract_includes()
-    paths = self.get_all_odin_file_paths()
+    paths = self.get_all_odin_file_paths(view)
     completions = []
 
     # if we have no . in the text on the current line add the included package names and builtins as completions

@@ -1,5 +1,8 @@
 import re
+import os
+import fnmatch
 
+# stores the completions list by package name
 class CompletionCache(object):
 	completions_by_package = dict()
 
@@ -12,8 +15,10 @@ class CompletionCache(object):
 	def set_completions(self, package, completions):
 		self.completions_by_package[package] = completions
 
+# dictionary keyed by the package name to the full path. 'sdl' -> 'shared:engine/libs/sdl'
+package_to_path = dict()
+completions_cache = CompletionCache()
 
-cache = CompletionCache()
 
 # captures: 1 -> name, 2 -> params, 3 -> return types
 proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:(?:->|where.*?)\s*(.*?))?(?:{|-|;)')
@@ -25,8 +30,33 @@ type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|e
 param_delim_pattern = re.compile(r',(?![^(]*\))')
 
 
+def reindex_all_package_names(current_folder):
+	package_to_path.clear()
+
+	# only include the active files folder if it isnt in the shared folder
+	if '/odin/shared' not in current_folder:
+		get_all_packages_in_folder(current_folder)
+	get_all_packages_in_folder(os.path.expanduser('~/odin/core'), 'core')
+	get_all_packages_in_folder(os.path.expanduser('~/odin/shared'), 'shared')
+
+
+# prefix should be 'core' or 'shared' to indicate special folders else None
+def get_all_packages_in_folder(path, prefix=None):
+	for root, dirs, files in os.walk(path):
+		dirs[:] = list(filter(lambda x: not x == '.git', dirs))
+		if len(fnmatch.filter(files, '*.odin')) > 0:
+			if prefix != None:
+				folder = root[root.index(prefix):]
+				package = os.path.basename(os.path.normpath(folder))
+				folder = folder.replace('/', ':', 1)
+				package_to_path[package] = folder
+			else:
+				# TODO: handle local, non-core/shared imports
+				pass
+
+
 def invalidate_completions(package):
-	cache.invalidate_completions(package)
+	completions_cache.invalidate_completions(package)
 
 
 def get_completions_from_file(package_or_filename, text):
