@@ -1,6 +1,7 @@
 {
 	"cmd": ["make"],
 	"file_patterns": ["Makefile"],
+    "syntax": "Packages/Odin/Odin-Make Output.sublime-syntax",
 	"variants": [
         {
             "name": "Clean",
