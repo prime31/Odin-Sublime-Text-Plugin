@@ -6,7 +6,7 @@ import subprocess as subp
 
 class OdinBuildCommand(sublime_plugin.WindowCommand):
 	def run(self, metal=False, d3d11=False, opt_level=0, print_args=False, apitrace=False):
-		if os.name == 'nt':
+		if sublime.platform() == 'windows':
 			self.build_win(d3d11, opt_level)
 			return
 

@@ -90,7 +90,16 @@ def get_completions_from_file(package_or_filename, text):
 	for m in matches:
 		name = m[0]
 		overloads = m[1]
-		completions.append([name + '\t' + package_or_filename, name + '(${0:overloads: ' + overloads + '})'])
+
+		# for overloads, we need to add completions for all the variants
+		for proc in [x.strip() + '(' for x in overloads.split(',')]:
+			for c in completions:
+				if c[0].startswith(proc):
+					new_completion = c[0].replace(proc, name + '(')
+					new_insertion = c[1].replace(proc, name + '(')
+					completions.append([new_completion, new_insertion])
+					break
+		completions.append([name + '     [proc overload, use a variant]\t' + package_or_filename, name + '(${0:overloads: ' + overloads + '})'])
 
 	return completions
 
