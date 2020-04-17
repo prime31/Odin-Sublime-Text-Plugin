@@ -43,6 +43,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     sublime.active_window().run_command('insert_import', {'package': package})
 
   def get_all_odin_file_paths(self, view):
+    odin_path = os.path.expanduser(view.settings().get('odin_install_path', '~/odin'))
     paths = set()
     window = sublime.active_window()
 
@@ -60,7 +61,7 @@ class OdinCompletions(sublime_plugin.EventListener):
       view.show_popup_menu(['Add import   ' + parser.package_to_path[word_before_dot]], lambda index: self.add_import(view, parser.package_to_path[word_before_dot]) if index >= 0 else None)
 
     if word_before_dot == None and not is_var_field_access:
-      paths.add(os.path.expanduser('~/odin/core/builtin/builtin.odin'))
+      paths.add(os.path.join(odin_path, 'core/builtin/builtin.odin'))
 
       # self.current_package is where we will source our files from
       current_folder = os.path.dirname(sublime.active_window().active_view().file_name())
@@ -83,7 +84,7 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.search_package = word_before_dot
       # include any imported shared packages
       if len(self.included_shared_packages) > 0:
-        odin_shared_path = os.path.expanduser('~/odin/shared')
+        odin_shared_path = os.path.join(odin_path, 'shared')
         for root, dirs, files in os.walk(odin_shared_path):
           dirs[:] = list(filter(lambda x: not x == '.git', dirs))
           root_dir = os.path.basename(root)
@@ -95,7 +96,7 @@ class OdinCompletions(sublime_plugin.EventListener):
       self.search_package = word_before_dot
       # include any imported core packages
       if len(self.included_core_packages) > 0:
-        odin_lib_path = os.path.expanduser('~/odin/core')
+        odin_lib_path = os.path.join(odin_path, 'core')
         for root, dirs, files in os.walk(odin_lib_path):
           root_dir = os.path.basename(root)
           if root_dir == word_before_dot and root_dir in self.included_core_packages:
@@ -177,7 +178,7 @@ class OdinCompletions(sublime_plugin.EventListener):
 
   def on_post_save_async(self, view):
     if time.time() - self.last_full_reindex_secs > self.full_reindex_interval_secs:
-      parser.reindex_all_package_names(os.path.dirname(sublime.active_window().active_view().file_name()))
+      parser.reindex_all_package_names(view, os.path.dirname(sublime.active_window().active_view().file_name()))
       self.last_full_reindex_secs = time.time()
 
   def on_query_completions(self, view, prefix, locations):

@@ -101,7 +101,8 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 	# fetches all the paths that have dylibs/dlls in them in folders named 'native' in the 'odin/shared' folder
 	def get_all_native_paths(self, lib_ext='.dylib', append_lib_name=False):
 		native_dirs = []
-		odin_shared_path = os.path.expanduser('~/odin/shared')
+		odin_path = os.path.expanduser(self.window.active_view().settings().get('odin_install_path', '~/odin'))
+		odin_shared_path = os.path.join(odin_path, 'shared')
 		for root, dirs, files in os.walk(odin_shared_path):
 			dirs[:] = list(filter(lambda x: not x == '.git', dirs))
 			if root.endswith('native'):

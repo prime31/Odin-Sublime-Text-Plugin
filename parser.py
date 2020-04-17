@@ -30,14 +30,15 @@ type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|e
 param_delim_pattern = re.compile(r',(?![^(]*\))')
 
 
-def reindex_all_package_names(current_folder):
+def reindex_all_package_names(view, current_folder):
 	package_to_path.clear()
 
 	# only include the active files folder if it isnt in the shared folder
 	if '/odin/shared' not in current_folder:
 		get_all_packages_in_folder(current_folder)
-	get_all_packages_in_folder(os.path.expanduser('~/odin/core'), 'core')
-	get_all_packages_in_folder(os.path.expanduser('~/odin/shared'), 'shared')
+	odin_path = os.path.expanduser(view.settings().get('odin_install_path', '~/odin'))
+	get_all_packages_in_folder(os.path.join(odin_path, 'core'), 'core')
+	get_all_packages_in_folder(os.path.join(odin_path, 'shared'), 'shared')
 
 
 # prefix should be 'core' or 'shared' to indicate special folders else None
