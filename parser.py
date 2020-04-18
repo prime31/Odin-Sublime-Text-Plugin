@@ -25,7 +25,9 @@ proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inlin
 # captures: 1 -> name, 2 -> overloaded procs
 proc_overload_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*::\s*proc\s*{(.*?)};')
 # captures: 1 -> name, 2 -> type/keyword
-type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|enum|bit_field|bit_set)')
+type_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(struct|union|enum|bit_field|bit_set|distinct)')
+# captures: 1 -> name
+const_pattern = re.compile(r'([A-Z0-9_]+)\s+::\s+(?!proc|distinct|enum|bit_set)\w+.*?;')
 # finds all the commas that are not surrounded by parens (used to filter out a proc with muliple params as a param to a proc)
 param_delim_pattern = re.compile(r',(?![^(]*\))')
 
@@ -53,7 +55,7 @@ def get_all_packages_in_folder(path, prefix=None):
 				package_to_path[package] = folder
 			else:
 				# TODO: handle local, non-core/shared imports
-				pass
+				print('TODO: add support for local, non-core/shared imports')
 
 
 def invalidate_completions(package):
@@ -61,7 +63,7 @@ def invalidate_completions(package):
 
 
 def get_completions_from_file(package_or_filename, text):
-	completions = get_type_completions(package_or_filename, text)
+	completions = get_type_and_const_completions(package_or_filename, text)
 	matches = proc_return_pattern.findall(text)
 	for m in matches:
 		name = m[0]
@@ -105,11 +107,15 @@ def get_completions_from_file(package_or_filename, text):
 	return completions
 
 
-def get_type_completions(package_or_filename, text):
+def get_type_and_const_completions(package_or_filename, text):
 	completions = []
 	matches = type_pattern.findall(text)
 	for m in matches:
 		completions.append(['{}\t{} {}'.format(m[0], m[1], package_or_filename), m[0]])
+
+	matches = const_pattern.findall(text)
+	for m in matches:
+		completions.append([m + '\tconst', m])
 
 	return completions
 
