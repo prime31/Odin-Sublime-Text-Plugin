@@ -4,6 +4,10 @@ import os
 import shutil
 import subprocess as subp
 
+from Odin import odin_set_vc_vars
+
+SENTINEL="SUBL_VC_VARS"
+
 class OdinBuildCommand(sublime_plugin.WindowCommand):
 	def run(self, metal=False, d3d11=False, opt_level=0, print_args=False, apitrace=False):
 		if sublime.platform() == 'windows':
@@ -53,8 +57,9 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
 			'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
 			'syntax': 'BuildOutput.sublime-syntax'
 		})
-
+	
 	def build_win(self, d3d11=False, opt_level=0):
+		odin_set_vc_vars.set()
 		vars = self.window.extract_variables()
 		dir_path = os.path.dirname(os.path.realpath(__file__))
 		bat_path = os.path.join(dir_path, 'build_windows.bat')
