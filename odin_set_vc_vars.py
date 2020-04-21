@@ -34,7 +34,7 @@ def _get_vc_env():
 	# keys, since Python does that to the mapping it stores in environ.
 	env = {}
 	for env_var in env_lines:
-		parts = env_var.split(''=', maxsplit=1)
+		parts = env_var.split('=', maxsplit=1)
 		env[parts[0].upper()] = parts[1]
 
 	return env
