@@ -31,10 +31,10 @@ class OdinCompletions(sublime_plugin.EventListener):
   built_in_procs = [
     ['make(array_map: Array_Map_Type, size: int) \tBuilt-in', 'make(${1:array_map: Array_Map_Type}, ${2:size: int})'],
     ['append(array_map: ^Array_Map_Type, arg: $E) \tBuilt-in', 'append(${1:array_map: Array_Map_Type}, ${2:arg: $E})'],
-    ['unreachable(message := "", loc := #caller_location) \tBuilt-in', 'append(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
-    ['unimplemented(message := "", loc := #caller_location) \tBuilt-in', 'append(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
-    ['panic(message := "", loc := #caller_location) \tBuilt-in', 'append(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
-    ['assert(condition: bool, message := "", loc := #caller_location) \tBuilt-in', 'append(${1:condition: bool}, ${2:message := "": string}, ${3:loc := #caller_location: $E})']
+    ['unreachable(message := "", loc := #caller_location) \tBuilt-in', 'unreachable(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
+    ['unimplemented(message := "", loc := #caller_location) \tBuilt-in', 'unimplemented(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
+    ['panic(message := "", loc := #caller_location) \tBuilt-in', 'panic(${1:message := "": string}, ${2:loc := #caller_location: $E})'],
+    ['assert(condition: bool, message := "", loc := #caller_location) \tBuilt-in', 'assert(${1:condition: bool}, ${2:message := "": string}, ${3:loc := #caller_location: $E})']
   ]
 
   def alias_for_package(self, package):
