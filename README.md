@@ -10,7 +10,9 @@ Download or clone this repo into your Sublime Text 3 Packages folder (found via 
 ## Setup
 By default, the plugin uses the path `~/odin` to locate the Odin shared and core folders. You can override this by adding the following to your Sublime settings file: `"odin_install_path": "your/path/to/odin"`
 
-(Windows only) By default, the Visual Studio x64 environment vars will be sourced from here: `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat`. You can override that by adding `'vc_vars_path'` to your Sublime preferences.
+**Package auto import**: By default, the plugin will prompt to auto import packages if you type the package name followed by ".". You can disable this behaviour by adding `"odin_prompt_for_package_import": false` to your Sublime preferences file.
+
+**vcvarsall**: (Windows only) By default, the Visual Studio x64 environment vars will be sourced from here: `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat`. You can override that by adding `'vc_vars_path'` to your Sublime preferences with the path to the batch file.
 
 
 ## Usage

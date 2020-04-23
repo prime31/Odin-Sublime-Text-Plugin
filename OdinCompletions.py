@@ -44,6 +44,7 @@ class OdinCompletions(sublime_plugin.EventListener):
     return package
 
   def add_import(self, view, package):
+    view.hide_popup()
     sublime.active_window().run_command('insert_import', {'package': package})
 
   def get_all_odin_file_paths(self, view):
@@ -62,7 +63,11 @@ class OdinCompletions(sublime_plugin.EventListener):
     # if we have a word before the dot and is_var_field_access = True this could potentially be a package
     # name that we can add an auto-import for
     if word_before_dot != None and is_var_field_access and word_before_dot in parser.package_to_path:
-      view.show_popup_menu(['Add import   ' + parser.package_to_path[word_before_dot]], lambda index: self.add_import(view, parser.package_to_path[word_before_dot]) if index >= 0 else None)
+      if view.settings().get('odin_prompt_for_package_import', True):
+        package_to_import = parser.package_to_path[word_before_dot]
+        content = '<body style="border: 2px solid white; margin: 0px; padding: 4px;"><h4>Add Package Import</h4><a href="{}">{}</a>'.format(package_to_import, package_to_import)
+        view.show_popup(content, sublime.HIDE_ON_MOUSE_MOVE_AWAY, -1, 500, 300, lambda package: self.add_import(view, package))
+        # view.show_popup_menu(['Add import   ' + parser.package_to_path[word_before_dot]], lambda index: self.add_import(view, parser.package_to_path[word_before_dot]) if index >= 0 else None)
 
     if word_before_dot == None and not is_var_field_access:
       paths.add(os.path.join(odin_path, 'core/builtin/builtin.odin'))
