@@ -52,6 +52,7 @@ def get_all_packages_in_folder(path, prefix=None):
 				folder = root[root.index(prefix):]
 				package = os.path.basename(os.path.normpath(folder))
 				folder = folder.replace('/', ':', 1)
+				folder = folder.replace('\\', ':', 1)
 				package_to_path[package] = folder
 			else:
 				# TODO: handle local, non-core/shared imports

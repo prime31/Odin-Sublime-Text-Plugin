@@ -44,7 +44,6 @@ def to_ada_case(txt):
 class InsertImportCommand(sublime_plugin.TextCommand):
 	def run(self, edit, package):
 		region = self.view.find_by_class(0, True, sublime.CLASS_EMPTY_LINE)
-		print(region)
 		self.view.insert(edit, region + 1, 'import "' + package + '"\n')
 
 
