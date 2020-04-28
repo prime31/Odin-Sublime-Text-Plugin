@@ -15,7 +15,7 @@ def _get_vc_env():
 	Returns None if the batch file fails.
 	"""
 	settings = sublime.load_settings('Preferences.sublime-settings')
-	vars_cmd = settings.get('vc_vars_path', 'C:\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat')
+	vars_cmd = settings.get('odin_vc_vars_path', 'C:\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat')
 	"""vars_arch = settings.get("vc_vars_arch", "amd64")"""
 
 	try:

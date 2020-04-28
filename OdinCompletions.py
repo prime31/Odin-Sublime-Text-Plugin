@@ -250,10 +250,16 @@ class OdinCompletions(sublime_plugin.EventListener):
       package_or_filename = self.search_package or os.path.split(path)[1]
       completions += parser.get_completions_from_file(package_or_filename, self.get_file_contents(path))
 
+    #sort completions alphabetically
+    if view.settings().get('odin_sort_completions_alphabetical', True):
+      completions.sort()
+
     # Report time spent building completions before returning
     delta_time_ms = int((time.time() - start_time) * 1000)
     message = 'Odin autocompletion took ' + str(delta_time_ms) + 'ms. Completions: ' + str(len(completions)) + '. Paths: ' + str(len(paths))
     view.window().status_message(message)
+
+
 
     return completions
 
