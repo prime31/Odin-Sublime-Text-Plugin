@@ -21,7 +21,7 @@ completions_cache = CompletionCache()
 
 
 # captures: 1 -> name, 2 -> params, 3 -> return types
-proc_return_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:(?:->|where.*?)\s*(.*?))?(?:{|-|;)')
+proc_return_pattern = re.compile(r'\b(\b[^_][\w_]+[\w\d_]*\b)\s*[:]\s*[:]\s*(?:inline|no_inline|)\s*proc\s*(?:|\s[\"a-z]+\s)\(([\w\W]*?)\)\s*(?:(?:->|where.*?)\s*(.*?))?(?:{|-|;)')
 # captures: 1 -> name, 2 -> overloaded procs
 proc_overload_pattern = re.compile(r'\b(\b[\w_]+[\w\d_]*\b)\s*::\s*proc\s*{(.*?)};')
 # captures: 1 -> name, 2 -> type/keyword
