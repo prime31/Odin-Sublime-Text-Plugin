@@ -3,22 +3,6 @@
         "caption": "Text Transformations",
         "children": [
             {
-                "caption": "Screaming Snake to Ada Case Selection",
-                "command": "ada_case_selection"
-            },
-            {
-                "caption": "To Snake Case Selection",
-                "command": "snake_case_selection"
-            },
-            {
-                "caption": "To Upper Selection",
-                "command": "to_upper_selection"
-            },
-            {
-                "caption": "To Lower Selection",
-                "command": "to_lower_selection"
-            },
-            {
                 "caption": "V to Odin Struct",
                 "command": "v_to_odin_struct"
             }
