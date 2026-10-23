@@ -158,11 +158,11 @@ class DuplicateCommand(sublime_plugin.WindowCommand):
         base, leaf = os.path.split(source)
 
         name, ext = os.path.splitext(leaf)
-        if ext is not '':
+        if ext:
             while '.' in name:
                 name, _ext = os.path.splitext(name)
                 ext = _ext + ext
-                if _ext is '':
+                if not _ext:
                     break
 
         input_panel = self.window.show_input_panel('Duplicate as:', source, partial(self.on_done, source, base), None, None)

@@ -137,9 +137,9 @@ class VToOdinStructCommand(sublime_plugin.TextCommand):
                 new_txt += '}\n'
             else:
                 tmp = re.findall(r'\s*(\w+)\s+([\w\[\]]+).*$', txt)
-                name = tmp[0][0]
-                typ = 'i32' if tmp[0][1] == 'int' else tmp[0][1]
-                new_txt += '\t' + name + ': ' + typ + ',\n'
+                if tmp:
+                    name = tmp[0][0]
+                    typ = 'i32' if tmp[0][1] == 'int' else tmp[0][1]
+                    new_txt += '\t' + name + ': ' + typ + ',\n'
 
         self.view.replace(edit, self.view.sel()[0], new_txt)
-

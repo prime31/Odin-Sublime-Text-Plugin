@@ -70,7 +70,7 @@ class OdinCompletions(sublime_plugin.EventListener):
                 # view.show_popup_menu(['Add import   ' + parser.package_to_path[word_before_dot]], lambda index: self.add_import(view, parser.package_to_path[word_before_dot]) if index >= 0 else None)
 
         if word_before_dot == None and not is_var_field_access:
-            paths.add(os.path.join(odin_path, 'core/builtin/builtin.odin'))
+            paths.add(os.path.join(odin_path, 'base/builtin/builtin.odin'))
 
             # self.current_package is where we will source our files from
             current_folder = os.path.dirname(sublime.active_window().active_view().file_name())

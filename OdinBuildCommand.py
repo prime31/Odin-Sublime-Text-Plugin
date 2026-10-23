@@ -40,7 +40,7 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
                 'shell_cmd': ' '.join(args),
                 'quiet': True,
                 'working_dir' : vars['file_path'],
-                'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
+                'file_regex': r'^(.*?)\((\d+):(\d+)\)\s(.*?)$',
                 'syntax': 'BuildOutput.sublime-syntax'
             })
             return
@@ -54,7 +54,7 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
             'shell_cmd': ' '.join(args),
             'quiet': True,
             'working_dir' : vars['file_path'],
-            'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
+            'file_regex': r'^(.*?)\((\d+):(\d+)\)\s(.*?)$',
             'syntax': 'BuildOutput.sublime-syntax'
         })
 
@@ -99,7 +99,7 @@ class OdinBuildCommand(sublime_plugin.WindowCommand):
             'shell_cmd': ' '.join(args),
             'quiet': False,
             'working_dir' : vars['file_path'],
-            'file_regex': '^(.*?)\((\d+):(\d+)\)\s(.*?)$',
+            'file_regex': r'^(.*?)\((\d+):(\d+)\)\s(.*?)$',
             'syntax': 'BuildOutput.sublime-syntax'
         })
 
